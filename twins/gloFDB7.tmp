@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://bjkf5wij7sttt"]
+
+[ext_resource type="Script" path="res://glogg.gd" id="1_p2ou0"]
+[ext_resource type="Texture2D" uid="uid://b4voqxc5sd1df" path="res://glogg.png" id="2_882la"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1mykb"]
+size = Vector2(12, 12)
+
+[node name="glogg" type="CharacterBody2D"]
+position = Vector2(95, 77)
+script = ExtResource("1_p2ou0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1mykb")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_882la")

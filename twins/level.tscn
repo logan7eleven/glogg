@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dhslw2ygrmfx8"]
+
+[ext_resource type="Script" path="res://level.gd" id="1_8niqe"]
+[ext_resource type="PackedScene" uid="uid://bjkf5wij7sttt" path="res://glogg.tscn" id="1_nrxew"]
+
+[node name="level" type="Node2D"]
+script = ExtResource("1_8niqe")
+
+[node name="glogg" parent="." instance=ExtResource("1_nrxew")]
+
+[node name="Projectiles" type="Node" parent="."]
+
+[connection signal="shoot" from="glogg" to="." method="_on_glogg_shoot"]

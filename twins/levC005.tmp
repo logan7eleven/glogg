@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhslw2ygrmfx8"]
+
+[ext_resource type="PackedScene" uid="uid://bjkf5wij7sttt" path="res://glogg.tscn" id="1_nrxew"]
+
+[node name="level" type="Node2D"]
+
+[node name="glogg" parent="." instance=ExtResource("1_nrxew")]
