@@ -1,13 +1,40 @@
-[gd_scene load_steps=3 format=3 uid="uid://dhslw2ygrmfx8"]
+[gd_scene load_steps=6 format=3 uid="uid://dhslw2ygrmfx8"]
 
 [ext_resource type="Script" path="res://level.gd" id="1_8niqe"]
-[ext_resource type="PackedScene" uid="uid://bjkf5wij7sttt" path="res://glogg.tscn" id="1_nrxew"]
+[ext_resource type="Script" path="res://bullet_pool.gd" id="2_1gagn"]
+[ext_resource type="PackedScene" uid="uid://cg5pfiyyuo5js" path="res://bullet.tscn" id="3_8g7xs"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v5bs4"]
+size = Vector2(11, 1189)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p2vh6"]
+size = Vector2(1684, 9)
 
 [node name="level" type="Node2D"]
+position = Vector2(1, -1)
 script = ExtResource("1_8niqe")
 
-[node name="glogg" parent="." instance=ExtResource("1_nrxew")]
+[node name="bounds" type="StaticBody2D" parent="."]
+disable_mode = 1
+collision_layer = 4
+collision_mask = 3
 
-[node name="Projectiles" type="Node" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="bounds"]
+position = Vector2(-5, 579)
+shape = SubResource("RectangleShape2D_v5bs4")
 
-[connection signal="shoot" from="glogg" to="." method="_on_glogg_shoot"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="bounds"]
+position = Vector2(1203, 515)
+shape = SubResource("RectangleShape2D_v5bs4")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="bounds"]
+position = Vector2(794, -2)
+shape = SubResource("RectangleShape2D_p2vh6")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="bounds"]
+position = Vector2(627, 804)
+shape = SubResource("RectangleShape2D_p2vh6")
+
+[node name="BulletPool" type="Node" parent="."]
+script = ExtResource("2_1gagn")
+bullet_scene = ExtResource("3_8g7xs")

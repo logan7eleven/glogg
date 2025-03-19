@@ -1,25 +1,21 @@
 extends Node2D
 
-var ammo: PackedScene = preload("res://bullet.tscn")
+@export var grid_width = 150
+@export var grid_height = 100
+@export var cell_size = 8
 
-#func
-#last_shot_time += _delta
-		#if last_shot_time >= 1 / fire_rate:
-			#var bullet = ammo.instantiate()
-			#bullet.global_position = global_position
-			#bullet.rotation = rotation
-			#bullet.linear_velocity = Vector2(0, -bullet_speed).rotated(rotation)
-			#add_child(bullet)
-			#last_shot_time = 0.0
-	#
-	#direction = last_aim_direction
+@onready var projectile_pool = $BulletPool
 
+var player_keys
 
-func _on_glogg_shoot():
-	#print("shoot signal")
-	var bull = ammo.instantiate()
-	bull.position = position
-	#bullet.linear_velocity = Vector2(0, glogg.bullet_speed).rotated(rotation)
-	$Projectiles.add_child(bull)
-	print(position)
-	#glogg.last_shot_time = 0.0
+func _ready():
+	var players = {
+		1: Vector2(600, 400)
+	}
+
+	player_keys = players.keys()
+
+	for i in player_keys.size():
+		var player: CharacterBody2D = load("res://glogg.tscn").instantiate()
+		player.position = players[player_keys[i]]
+		add_child(player)

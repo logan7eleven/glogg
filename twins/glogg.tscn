@@ -4,10 +4,10 @@
 [ext_resource type="Texture2D" uid="uid://b4voqxc5sd1df" path="res://glogg.png" id="2_882la"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1mykb"]
-size = Vector2(96, 96)
+size = Vector2(24, 24)
 
 [node name="glogg" type="CharacterBody2D"]
-position = Vector2(95, 77)
+collision_mask = 4
 script = ExtResource("1_p2ou0")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -16,5 +16,10 @@ shape = SubResource("RectangleShape2D_1mykb")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 3
 rotation = 1.5708
-scale = Vector2(8, 8)
+scale = Vector2(2, 2)
 texture = ExtResource("2_882la")
+
+[node name="gun" type="Marker2D" parent="Sprite2D"]
+position = Vector2(-1.23978e-05, -3.5)
+rotation = -1.5708
+scale = Vector2(0.5, 0.5)
