@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://dhslw2ygrmfx8"]
 
-[ext_resource type="Script" path="res://level.gd" id="1_8niqe"]
-[ext_resource type="Script" path="res://bullet_pool.gd" id="2_1gagn"]
+[ext_resource type="Script" uid="uid://cat3821w5n6fc" path="res://level.gd" id="1_8niqe"]
+[ext_resource type="Script" uid="uid://bjeynbd2f36m6" path="res://bullet_pool.gd" id="2_1gagn"]
 [ext_resource type="PackedScene" uid="uid://cg5pfiyyuo5js" path="res://bullet.tscn" id="3_8g7xs"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v5bs4"]
@@ -14,7 +14,7 @@ size = Vector2(1684, 9)
 position = Vector2(1, -1)
 script = ExtResource("1_8niqe")
 
-[node name="bounds" type="StaticBody2D" parent="."]
+[node name="bounds" type="Area2D" parent="." groups=["bounds"]]
 disable_mode = 1
 collision_layer = 4
 collision_mask = 3
