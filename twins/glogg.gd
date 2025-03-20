@@ -1,6 +1,6 @@
 extends Area2D  # Changed from CharacterBody2D
 
-@onready var gun = $Sprite2D/gun
+@onready var gun = $cannon/gun
 @export var pixels_per_step = 16  # This will be 120 pixels/second at 30fps
 
 var last_aim_direction = 0.0
@@ -14,6 +14,7 @@ func _physics_process(_delta):
 	if movement != Vector2.ZERO:
 		movement = movement.normalized()
 		position += movement * pixels_per_step
+		$cockpit.rotation = movement.angle()
 	
 	# Aiming and Shooting
 	var aim_x = Input.get_axis("aimL", "aimR")
@@ -21,8 +22,8 @@ func _physics_process(_delta):
 	
 	if aim_x != 0 or aim_y != 0:
 		var aim_direction = Vector2(aim_x, aim_y)
-		var snapped_angle = round(aim_direction.angle() / (PI / 12)) * (PI / 12) + PI/2
-		$Sprite2D.rotation = lerp_angle($Sprite2D.rotation, snapped_angle, 0.65)
+		var snapped_angle = round(aim_direction.angle() / (PI / 12)) * (PI / 12)
+		$cannon.rotation = lerp_angle($cannon.rotation, snapped_angle, 0.65)
 		
 		# Fire bullet
 		var bullet = get_parent().projectile_pool.get_bullet()

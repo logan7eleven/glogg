@@ -11,13 +11,12 @@ size = Vector2(11, 1189)
 size = Vector2(1684, 9)
 
 [node name="level" type="Node2D"]
-position = Vector2(1, -1)
 script = ExtResource("1_8niqe")
 
 [node name="bounds" type="Area2D" parent="." groups=["bounds"]]
 disable_mode = 1
-collision_layer = 4
-collision_mask = 3
+collision_layer = 8
+collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="bounds"]
 position = Vector2(-5, 579)
