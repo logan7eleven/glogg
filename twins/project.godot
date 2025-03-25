@@ -129,6 +129,11 @@ aimD={
 2d_render/layer_1="player"
 2d_render/layer_2="enemies"
 
+[physics]
+
+common/physics_ticks_per_second=30
+common/max_physics_steps_per_frame=30
+
 [rendering]
 
 renderer/rendering_method="mobile"

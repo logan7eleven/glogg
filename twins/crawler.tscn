@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqvgcqqbx2r8h"]
+
+[ext_resource type="Script" uid="uid://6qtki4eb0d3i" path="res://crawler.gd" id="1_vawpx"]
+
+[node name="Node2D" type="Area2D"]
+script = ExtResource("1_vawpx")
