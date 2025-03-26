@@ -15,7 +15,15 @@ var current_fire_rate = 15  # Start with stage 1 fire rate (in frames)
 var last_aim_direction = 0.0
 var min_pos: Vector2
 var max_pos: Vector2
-var frame_counter = 0
+var last_fire_frame = 0
+var can_fire = true
+var aim_direction = Vector2.ZERO
+var target_angle = 0.0
+var fire_queued = false
+var cockpit_target_angle = 0.0
+var movement_queued = false
+
+const ROTATION_TOLERANCE = 0.03
 
 func _ready():
 	# Get viewport size and set constraints with margins that account for sprite size and scale
@@ -27,10 +35,22 @@ func _ready():
 	max_pos = Vector2(viewport_size.x - sprite_radius, viewport_size.y - sprite_radius)
 	print("Stage ", current_stage, " - Fire Rate: ", 30/current_fire_rate, " shots per second")
 
+func _process (_delta):
+	# Aiming and Shooting
+	var aim_x = Input.get_axis("aimL", "aimR")
+	var aim_y = Input.get_axis("aimU", "aimD")
+	aim_direction = Vector2(aim_x, aim_y)
+	
+	if aim_direction != Vector2.ZERO and not fire_queued:
+		var frames_since_last_fire = Engine.get_physics_frames() - last_fire_frame
+		if frames_since_last_fire >= current_fire_rate:
+			fire_queued = true
+			target_angle = round(aim_direction.angle() / (PI / 12)) * (PI / 12)
+	
 func advance_stage():
 	current_stage = min(current_stage + 1, 3)  # Cap at stage 3
 	current_fire_rate = fire_rates[current_stage]
-	frame_counter = 0  # Reset frame counter on stage change
+	last_fire_frame = 0  # Reset frame counter on stage change
 	print("Stage ", current_stage, " - Fire Rate: ", 30/current_fire_rate, " shots per second")
 
 func try_fire(aim_angle: float):
@@ -39,8 +59,6 @@ func try_fire(aim_angle: float):
 		bullet.fire(gun.global_position, aim_angle)
 
 func _physics_process(_delta):
-	frame_counter = (frame_counter + 1) % current_fire_rate
-		
 	# Movement
 	var move_x = Input.get_axis("moveL", "moveR")
 	var move_y = Input.get_axis("moveU", "moveD")
@@ -55,24 +73,34 @@ func _physics_process(_delta):
 		target_pos.y = clamp(target_pos.y, min_pos.y, max_pos.y)
 		
 		position = target_pos
-		$cockpit.rotation = movement.angle()
+		
+		if not movement_queued:
+			cockpit_target_angle = movement.angle()
+			movement_queued = true
+			
+	if movement_queued:
+		$cockpit.rotation = lerp_angle($cockpit.rotation, cockpit_target_angle, 0.65)
+		
+		var cockpit_angle_diff = abs(wrapf(cockpit_target_angle - $cockpit.rotation, -PI, PI))
+		if cockpit_angle_diff <= ROTATION_TOLERANCE:
+			movement_queued = false
+		
+		#$cockpit.rotation = movement.angle()
 	
 	# Aiming and Shooting
-	var aim_x = Input.get_axis("aimL", "aimR")
-	var aim_y = Input.get_axis("aimU", "aimD")
-	
-	if aim_x != 0 or aim_y != 0:
-		var aim_direction = Vector2(aim_x, aim_y)
-		var snapped_angle = round(aim_direction.angle() / (PI / 12)) * (PI / 12)
-		$cannon.rotation = lerp_angle($cannon.rotation, snapped_angle, 0.65)
+	if aim_direction != Vector2.ZERO or fire_queued:
+		$cannon.rotation = lerp_angle($cannon.rotation, target_angle, 0.65)
 		
-		# Fire bullet if frame counter is 0
-		if frame_counter == 0:
-			try_fire(snapped_angle)
-		
+		var angle_diff = abs(wrapf(target_angle - $cannon.rotation, -PI, PI))
+				
+		if fire_queued and angle_diff <= ROTATION_TOLERANCE:
+			try_fire(target_angle)
+			last_fire_frame = Engine.get_physics_frames()
+			fire_queued = false
+
 		last_aim_direction = rotation
 
-# For testing - you can bind this to a key or event
+# For testing - Bind this to event later
 func _input(event):
 	if event.is_action_pressed("ui_accept"):  # Space bar by default
 		advance_stage()

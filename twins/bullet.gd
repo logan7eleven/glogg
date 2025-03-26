@@ -72,7 +72,7 @@ func deactivate():
 	set_deferred("monitoring", false)
 	set_deferred("monitorable", false)
 	animated_sprite.stop()
-	animated_sprite.fram = 0
+	animated_sprite.frame = 0
 	if bullet_pool:
 		call_deferred("_safe_return_to_pool")
 
