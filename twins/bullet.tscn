@@ -1,27 +1,71 @@
-[gd_scene load_steps=4 format=3 uid="uid://cg5pfiyyuo5js"]
+[gd_scene load_steps=7 format=3 uid="uid://cg5pfiyyuo5js"]
 
 [ext_resource type="Script" uid="uid://bkgkb5t2kbf54" path="res://bullet.gd" id="1_0aot5"]
 [ext_resource type="Texture2D" uid="uid://cbtymv8krmwxd" path="res://bullet.png" id="1_kgsqt"]
+[ext_resource type="Texture2D" uid="uid://dv5sccugis1oq" path="res://bullet2.png" id="2_2b2rl"]
+[ext_resource type="Texture2D" uid="uid://d021neuncap6w" path="res://bullet3.png" id="3_b7duk"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_2b2rl"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_kgsqt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_kgsqt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_kgsqt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_2b2rl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_b7duk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_2b2rl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_b7duk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_2b2rl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_b7duk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_2b2rl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_b7duk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_2b2rl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_b7duk")
+}],
+"loop": false,
+"name": &"default",
+"speed": 15.0
+}]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xqmrk"]
 size = Vector2(4.00003, 7.99999)
 
 [node name="bullet" type="Area2D"]
 visibility_layer = 2
-collision_layer = 2
-collision_mask = 8
-angular_damp = 92.418
 script = ExtResource("1_0aot5")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 texture_filter = 3
 rotation = 1.5708
 scale = Vector2(2, 2)
-texture = ExtResource("1_kgsqt")
+sprite_frames = SubResource("SpriteFrames_2b2rl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(1.19209e-07, -5.96046e-08)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_xqmrk")
-
-[connection signal="area_entered" from="." to="." method="_on_area_entered"]

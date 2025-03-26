@@ -1,10 +1,10 @@
 extends Area2D
 
-@export var bullet_speed = 48
+@export var bullet_speed = 30
+@onready var animated_sprite = $AnimatedSprite2D
 var direction: Vector2
 var initial_position: Vector2
 var bullet_pool: Node
-
 var _min_collision_size: float
 var _substeps: int = 1
 
@@ -19,6 +19,7 @@ func _ready():
 	_update_substeps()
 	monitoring = false
 	monitorable = false
+	animated_sprite.animation_finished.connect(_on_animation_finished)
 
 func _update_substeps():
 	_substeps = ceili(bullet_speed / (_min_collision_size * 0.8)) + 1
@@ -55,15 +56,23 @@ func fire(pos: Vector2, angle: float):
 	direction = Vector2.RIGHT.rotated(rotation)
 	visible = true
 	_update_substeps()
+	animated_sprite.frame = 0
+	animated_sprite.play()
 
 func set_speed(speed: float):
 	bullet_speed = speed
 	_update_substeps()
-
+	
+func _on_animation_finished():
+	animated_sprite.stop()
+	animated_sprite.frame = animated_sprite.sprite_frames.get_frame_count("default") - 1
+	
 func deactivate():
 	visible = false
 	set_deferred("monitoring", false)
 	set_deferred("monitorable", false)
+	animated_sprite.stop()
+	animated_sprite.fram = 0
 	if bullet_pool:
 		call_deferred("_safe_return_to_pool")
 
@@ -72,5 +81,4 @@ func _safe_return_to_pool():
 
 func _on_area_entered(area: Area2D):
 	if area.is_in_group("bounds"):
-		print("bound hit")
 		deactivate()

@@ -1,9 +1,5 @@
 extends Node2D
 
-#@export var grid_width = 150
-#@export var grid_height = 100
-#@export var cell_size = 8
-
 @onready var projectile_pool = $BulletPool
 
 func _ready():
