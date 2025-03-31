@@ -82,3 +82,5 @@ func _safe_return_to_pool():
 func _on_area_entered(area: Area2D):
 	if area.is_in_group("bounds"):
 		deactivate()
+	if area.is_in_group("enemies"):
+		deactivate()

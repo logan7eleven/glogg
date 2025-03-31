@@ -3,7 +3,10 @@
 [ext_resource type="Script" uid="uid://6qtki4eb0d3i" path="res://crawler.gd" id="1_vawpx"]
 [ext_resource type="Texture2D" uid="uid://pquwcow4bbxr" path="res://jelly.png" id="2_3n7dr"]
 
-[node name="Node2D" type="Area2D"]
+[node name="crawler" type="Area2D"]
+scale = Vector2(2, 2)
+collision_layer = 2
+collision_mask = 11
 script = ExtResource("1_vawpx")
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
@@ -14,3 +17,5 @@ polygon = PackedVector2Array(-6, -13, -6, -11, -10, -11, -10, -7, -12, -7, -12, 
 texture_filter = 3
 scale = Vector2(2, 2)
 texture = ExtResource("2_3n7dr")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]

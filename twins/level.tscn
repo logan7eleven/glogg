@@ -12,11 +12,12 @@ size = Vector2(120, 920)
 size = Vector2(1320, 120)
 
 [node name="level" type="Node2D"]
+process_mode = 3
 script = ExtResource("1_8niqe")
 
 [node name="bounds" type="Area2D" parent="." groups=["bounds"]]
-collision_layer = 8
-collision_mask = 4
+collision_layer = 128
+collision_mask = 8
 
 [node name="LeftWall" type="CollisionShape2D" parent="bounds"]
 position = Vector2(-60, 400)
@@ -34,10 +35,17 @@ shape = SubResource("RectangleShape2D_2")
 position = Vector2(600, 860)
 shape = SubResource("RectangleShape2D_2")
 
-[node name="BulletPool" type="Node" parent="."]
+[node name="bullet_pool" type="Node" parent="."]
 script = ExtResource("2_1gagn")
 bullet_scene = ExtResource("3_8g7xs")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(600, 400)
 texture = ExtResource("4_0b4ue")
+
+[node name="game_over" type="Label" parent="."]
+offset_right = 92.0
+offset_bottom = 23.0
+text = "GAME OVER"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -57,8 +57,8 @@ size = Vector2(4.00003, 7.99999)
 
 [node name="bullet" type="Area2D"]
 visibility_layer = 2
-collision_layer = 2
-collision_mask = 8
+collision_layer = 8
+collision_mask = 130
 script = ExtResource("1_0aot5")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

@@ -29,6 +29,7 @@ func _ready():
 	# Get viewport size and set constraints with margins that account for sprite size and scale
 	var viewport_size = get_viewport_rect().size
 	var sprite_radius = 23 * scale.x
+	add_to_group("players")
 	
 	# Use sprite_radius to calculate bounds
 	min_pos = Vector2(sprite_radius, sprite_radius)
