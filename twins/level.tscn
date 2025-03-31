@@ -45,10 +45,12 @@ texture = ExtResource("4_0b4ue")
 
 [node name="game_over" type="Label" parent="."]
 process_mode = 3
-offset_left = 515.0
-offset_top = 349.0
-offset_right = 701.0
-offset_bottom = 442.0
+offset_left = 135.0
+offset_top = 180.0
+offset_right = 1074.0
+offset_bottom = 623.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 100
 text = "GAME OVER"
 horizontal_alignment = 1
 vertical_alignment = 1

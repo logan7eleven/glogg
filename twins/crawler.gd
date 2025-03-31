@@ -3,7 +3,7 @@ extends Area2D
 @export var amplitude = 2
 @export var period = 2
 @export var speed_up = 10
-@export var speed_down = 5
+@export var speed_down = 6
 
 var t = 0.0
 var viewport_bounds
@@ -13,7 +13,7 @@ var movement_speed = 0
 var health = 3
 
 func _ready():
-	viewport_bounds = get_viewport_rect().size - Vector2(46, 46) # Assuming sprite_radius is 23
+	viewport_bounds = get_viewport_rect().size - Vector2(90, 30) # Assuming sprite_radius is 23
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("players")
 	direction = (player.position - position).normalized()
@@ -33,7 +33,7 @@ func _process(delta):
 	var movement = direction * movement_speed
 	movement.y += sine_pos * delta
 
- # Check for crawler collisions before moving
+ # Check for enemy collisions before moving **THIS ISNT ReALLY WORKING YET, ENEMIES WILL STILL OVERLAP, UNFORTUNATELY**
 	var potential_position = position + movement
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(
@@ -50,13 +50,6 @@ func _process(delta):
 		new_position.x = clamp(new_position.x, 0, viewport_bounds.x)
 		new_position.y = clamp(new_position.y, 0, viewport_bounds.y)
 		position = new_position
-
-
-	## Ensure the crawler stays within the viewport
-	#var new_position = position + movement
-	#new_position.x = clamp(new_position.x, 0, viewport_bounds.x)
-	#new_position.y = clamp(new_position.y, 0, viewport_bounds.y)
-	#position = new_position
 
 	# Redirect towards the player after each full wave
 	if t >= period:
@@ -80,8 +73,6 @@ func _on_area_entered(area: Area2D):
 		area.deactivate()  # Call deactivate on the bullet
 
 func _on_collision_with_player():
-	print("Collision with player detected!")
 	if player:
 		var level = get_parent()
 		level.game_over()
-		print("game over!")

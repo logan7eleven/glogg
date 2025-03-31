@@ -36,3 +36,9 @@ func game_over():
 	game_over_label.show()
 	get_tree().paused = true
 	set_process_input(true)
+	for player in get_tree().get_nodes_in_group("players"):
+		player.queue_free()
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		enemy.queue_free()
+	for bullet in projectile_pool.bullet_instances:
+		bullet.deactivate()
