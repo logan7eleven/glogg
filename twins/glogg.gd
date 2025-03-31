@@ -1,7 +1,7 @@
 extends Area2D
 
 @onready var gun = $cannon/gun
-@export var pixels_per_step = 15
+@export var pixels_per_step = 10
 
 # Stage-based fire rates in frames (at 30 FPS)
 var fire_rates = {
