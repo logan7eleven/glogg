@@ -20,6 +20,7 @@ func _ready():
 	monitoring = false
 	monitorable = false
 	animated_sprite.animation_finished.connect(_on_animation_finished)
+	add_to_group("bullets")
 
 func _update_substeps():
 	_substeps = ceili(bullet_speed / (_min_collision_size * 0.8)) + 1

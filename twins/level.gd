@@ -9,6 +9,7 @@ func _ready():
 	Engine.max_fps = 30
 	
 	game_over_label.hide()
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	var players = {
 		1: Vector2(600, 400)
@@ -32,6 +33,6 @@ func _ready():
 		add_child(crawler)
 		
 func game_over():
-	get_tree().paused = true
 	game_over_label.show()
+	get_tree().paused = true
 	set_process_input(true)
