@@ -1,9 +1,9 @@
 extends Area2D
 
-@export var amplitude = 2
+@export var amplitude = 20
 @export var period = 2
-@export var speed_up = 10
-@export var speed_down = 6
+@export var speed_up = 6
+@export var speed_down = 10
 
 var t = 0.0
 var min_pos: Vector2
@@ -36,6 +36,7 @@ func _process(delta):
 
 	# Calculate the movement direction and update position
 	var movement = direction * movement_speed
+	movement.x += sine_pos * delta
 	movement.y += sine_pos * delta
 
  # Check for enemy collisions before moving **THIS ISNT ReALLY WORKING YET, ENEMIES WILL STILL OVERLAP, UNFORTUNATELY**
