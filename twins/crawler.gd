@@ -13,7 +13,7 @@ var movement_speed = 0
 var health = 3
 
 func _ready():
-	viewport_bounds = get_viewport_rect().size - Vector2(90, 30) # Assuming sprite_radius is 23
+	viewport_bounds = get_viewport_rect().size - Vector2(24, 24)
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("players")
 	direction = (player.position - position).normalized()
