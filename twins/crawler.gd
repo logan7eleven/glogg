@@ -6,14 +6,19 @@ extends Area2D
 @export var speed_down = 6
 
 var t = 0.0
-var viewport_bounds
+var min_pos: Vector2
+var max_pos: Vector2
+var viewport_size
+var sprite_radius = 12 * scale.x
 var player
 var direction = Vector2.ZERO
 var movement_speed = 0
 var health = 3
 
 func _ready():
-	viewport_bounds = get_viewport_rect().size - Vector2(24, 24)
+	viewport_size = get_viewport_rect().size
+	min_pos = Vector2(sprite_radius, sprite_radius)
+	max_pos = Vector2(viewport_size.x - sprite_radius, viewport_size.y - sprite_radius)
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("players")
 	direction = (player.position - position).normalized()
@@ -47,8 +52,8 @@ func _process(delta):
 	if !collision or !collision.collider.is_in_group("enemies"):
 		# Only move if no collision with other crawlers
 		var new_position = potential_position
-		new_position.x = clamp(new_position.x, 0, viewport_bounds.x)
-		new_position.y = clamp(new_position.y, 0, viewport_bounds.y)
+		new_position.x = clamp(new_position.x, min_pos.x, max_pos.x)
+		new_position.y = clamp(new_position.y, min_pos.y, max_pos.y)
 		position = new_position
 
 	# Redirect towards the player after each full wave
