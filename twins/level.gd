@@ -4,10 +4,6 @@ extends Node2D
 @onready var game_over_label = $game_over
 
 func _ready():
-	# Set up fixed 30 FPS timestep
-	Engine.physics_ticks_per_second = 30
-	Engine.max_fps = 30
-	
 	game_over_label.hide()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	

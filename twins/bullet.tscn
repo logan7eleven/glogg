@@ -53,7 +53,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xqmrk"]
-size = Vector2(4.00003, 7.99999)
+size = Vector2(6, 7.99999)
 
 [node name="bullet" type="Area2D"]
 visibility_layer = 2
@@ -68,7 +68,7 @@ scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_2b2rl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(1.19209e-07, -5.96046e-08)
+position = Vector2(1.19209e-07, 0)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_xqmrk")
 

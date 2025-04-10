@@ -1,12 +1,13 @@
 extends Area2D
 
-@export var bullet_speed = 30
+@export var bullet_speed = 800
 @onready var animated_sprite = $AnimatedSprite2D
 var direction: Vector2
 var initial_position: Vector2
 var bullet_pool: Node
 var _min_collision_size: float
 var _substeps: int = 1
+var step_size = 1
 
 func init_pool(pool: Node):
 	bullet_pool = pool
@@ -23,14 +24,14 @@ func _ready():
 	add_to_group("bullets")
 
 func _update_substeps():
-	_substeps = ceili(bullet_speed / (_min_collision_size * 0.8)) + 1
+	_substeps = ceili((bullet_speed * get_physics_process_delta_time()) / (_min_collision_size * 0.8)) + 1
 	_substeps = clampi(_substeps, 1, 8)
 
-func _physics_process(_delta):
+func _physics_process (delta):
 	if not visible:
 		return
-		
-	var step_size = bullet_speed as float / _substeps
+	
+	var step_size = (bullet_speed * delta) as float / _substeps
 	
 	for _i in range(_substeps):
 		var step = direction * step_size

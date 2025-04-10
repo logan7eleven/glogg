@@ -1,9 +1,10 @@
 extends Area2D
 
-@export var amplitude = 20
-@export var period = 2
-@export var speed_up = 6
-@export var speed_down = 10
+@export var amplitude = 400
+@export var period = 0.75
+@export var speed_up = 100
+@export var speed_down = 500
+@export var speed = 300
 
 var t = 0.0
 var min_pos: Vector2
@@ -35,8 +36,7 @@ func _process(delta):
 	movement_speed = speed_up if sine_vel >= 0 else speed_down
 
 	# Calculate the movement direction and update position
-	var movement = direction * movement_speed
-	movement.x += sine_pos * delta
+	var movement = direction * speed * delta
 	movement.y += sine_pos * delta
 
  # Check for enemy collisions before moving **THIS ISNT ReALLY WORKING YET, ENEMIES WILL STILL OVERLAP, UNFORTUNATELY**
@@ -64,6 +64,7 @@ func _process(delta):
 
 func take_damage():
 	health -= 1
+	print(health)
 	if health <= 0:
 		queue_free()  # Remove crawler when health reaches 0
 
