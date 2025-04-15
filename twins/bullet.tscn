@@ -53,10 +53,11 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xqmrk"]
-size = Vector2(6, 7.99999)
+size = Vector2(3, 4.00001)
 
 [node name="bullet" type="Area2D"]
 visibility_layer = 2
+scale = Vector2(2, 2)
 collision_layer = 4
 collision_mask = 10
 script = ExtResource("1_0aot5")
@@ -64,11 +65,10 @@ script = ExtResource("1_0aot5")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 texture_filter = 3
 rotation = 1.5708
-scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_2b2rl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(1.19209e-07, 0)
+position = Vector2(5.96046e-08, 0)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_xqmrk")
 

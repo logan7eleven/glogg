@@ -94,7 +94,7 @@ func _physics_process(delta):
 
 func take_damage():
 	health -= 1
-	print(health)
+	print("Crawler Health:", health)
 	if health <= 0:
 		queue_free()  # Remove crawler when health reaches 0
 
@@ -103,7 +103,6 @@ func _on_area_entered(area: Area2D):
 		_on_collision_with_player()
 	elif area.is_in_group("bullets"):
 		take_damage()
-		print("Bullet collision at: ", Time.get_ticks_msec())
 		area.deactivate()  # Call deactivate on the bullet
 
 func _on_collision_with_player():

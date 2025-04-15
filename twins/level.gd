@@ -19,10 +19,10 @@ func _ready():
 # Spawn crawlers in bottom corners
 	var viewport_size = get_viewport_rect().size
 	var crawler_positions = [
-		Vector2(50, viewport_size.y -50),  # Bottom left
-		Vector2(viewport_size.x - 50, viewport_size.y - 50),  # Bottom right
-		Vector2(viewport_size.x - 50, -50),
-		Vector2(50, -50)
+		Vector2(viewport_size.x - 1100, viewport_size.y - 700),
+		Vector2(viewport_size.x - 100, viewport_size.y - 700),
+		Vector2(viewport_size.x - 1100, viewport_size.y - 100),
+		Vector2(viewport_size.x - 100, viewport_size.y - 100)
 	]
 
 	for pos in crawler_positions:

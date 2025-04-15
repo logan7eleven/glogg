@@ -43,7 +43,7 @@ func deactivate():
 	has_collided = true
 	visible = false
 	monitoring = false
-	monitorable = false
+	set_deferred("monitorable", false)
 	animated_sprite.stop()
 	animated_sprite.frame = 0
 	if bullet_pool:
