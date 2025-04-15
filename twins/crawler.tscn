@@ -5,11 +5,13 @@
 
 [node name="crawler" type="CharacterBody2D"]
 scale = Vector2(2, 2)
-collision_layer = 8
-collision_mask = 139
+collision_layer = 2
+collision_mask = 15
 script = ExtResource("1_vawpx")
 
 [node name="HitBox" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 15
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="HitBox"]
 position = Vector2(0, 0.875)
