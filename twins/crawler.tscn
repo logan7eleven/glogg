@@ -1,13 +1,20 @@
 [gd_scene load_steps=3 format=3 uid="uid://bqvgcqqbx2r8h"]
 
-[ext_resource type="Script" uid="uid://bt31mdlkthusn" path="res://crawler.gd" id="1_vawpx"]
+[ext_resource type="Script" uid="uid://6qtki4eb0d3i" path="res://crawler.gd" id="1_vawpx"]
 [ext_resource type="Texture2D" uid="uid://pquwcow4bbxr" path="res://jelly.png" id="2_3n7dr"]
 
-[node name="crawler" type="Area2D"]
+[node name="crawler" type="CharacterBody2D"]
 scale = Vector2(2, 2)
-collision_layer = 2
-collision_mask = 11
+collision_layer = 8
+collision_mask = 139
 script = ExtResource("1_vawpx")
+
+[node name="HitBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="HitBox"]
+position = Vector2(0, 0.875)
+scale = Vector2(0.5625, 0.5625)
+polygon = PackedVector2Array(-6, -12.6667, -6, -10.6667, -10, -10.6667, -10, -6.66667, -12, -6.66667, -12, 1.33333, -10, 1.33333, -10, 5.33333, -12, 5.33333, -12, 7.33333, -12, 9.33333, -12, 11.3333, -10, 11.3333, -10, 9.33333, -8, 9.33333, -8, 3.33333, -6, 3.33333, -6, 11.3333, -4, 11.3333, -4, 9.33333, -2, 9.33333, -2, 3.33333, 2, 3.33333, 2, 9.33333, 4, 9.33333, 4, 11.3333, 6, 11.3333, 6, 3.33333, 8, 3.33333, 8, 9.33333, 10, 9.33333, 10, 11.3333, 12, 11.3333, 12, 5.33333, 10, 5.33333, 10, 1.33333, 12, 1.33333, 12, -6.66667, 10, -6.66667, 10, -10.6667, 6, -10.6667, 6, -12.6667)
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
 position = Vector2(0, 0.5)
@@ -18,5 +25,3 @@ polygon = PackedVector2Array(-6, -12.6667, -6, -10.6667, -10, -10.6667, -10, -6.
 texture_filter = 3
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("2_3n7dr")
-
-[connection signal="area_entered" from="." to="." method="_on_area_entered"]
