@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@export var amplitude = 100
+@export var amplitude = 150
 @export var period = 0.75
 @export var speed_up = 0.25    # Speed for upward sine movement (/)
 @export var speed_down = 1.0 # Speed for downward sine movement (\)
@@ -14,7 +14,7 @@ var sprite: Sprite2D
 var is_bouncing = false
 var bounce_timer = 0.0
 var bounce_movement = Vector2.ZERO
-var bounce_speed_multiplier = 1.0 
+var bounce_speed_multiplier = 0.5
 var collision_cooldown = 0.0
 
 func _ready():
@@ -40,8 +40,6 @@ func _physics_process(delta):
 	if collision_cooldown > 0:
 		collision_cooldown -= delta
 	
-	var should_invert = sin(0.75 * PI * 2) * transform.y.y >= sin(0.25 * PI * 2) * transform.y.y
-	
 	# Handle bounce state
 	if is_bouncing:
 		var collision = move_and_collide(bounce_movement)
@@ -50,7 +48,6 @@ func _physics_process(delta):
 		if bounce_timer <= 0:
 			# End bounce and reset sine wave
 			is_bouncing = false
-			t = 0.0
 			look_at(player.position)
 			if sprite:
 				sprite.global_rotation = 0
@@ -76,13 +73,19 @@ func _physics_process(delta):
 	
 	var collision = move_and_collide(global_movement)
 	if collision and collision_cooldown <= 0:
-		# Start bounce
-		is_bouncing = true
-		bounce_timer = 0.2
-		# Set bounce movement as reverse of current movement at half speed
-		bounce_movement = -global_movement * bounce_speed_multiplier
+		if collision.get_collider().is_in_group("bounds"):
+			# For bounds, just zero out the component that would go beyond bounds
+			# Don't enter bounce state or reverse direction
+			var normal = collision.get_normal()
+			var adjusted_movement = global_movement - (global_movement.dot(normal) * normal)
+			move_and_collide(adjusted_movement)
+		else:
+			# Only enter bounce state for non-bounds collisions (like other enemies)
+			is_bouncing = true
+			bounce_timer = 0.2
+			bounce_movement = -global_movement * bounce_speed_multiplier
 		collision_cooldown = 0.05
-	
+		
 	sprite.global_rotation = 0
 	
 	if t >= 2 * PI:
