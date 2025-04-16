@@ -17,6 +17,9 @@ var bounce_movement = Vector2.ZERO
 var bounce_speed_multiplier = 0.5
 var collision_cooldown = 0.0
 
+signal enemy_damaged(slot_index: int)
+signal enemy_killed(slot_index: int)
+
 func _ready():
 	sprite = get_node_or_null("Sprite2D")
 	t = randf() * PI * 2
@@ -95,17 +98,19 @@ func _physics_process(delta):
 			if sprite:
 				sprite.global_rotation = 0
 
-func take_damage():
+func take_damage(slot_index: int):
 	health -= 1
 	print("Crawler Health:", health)
+	emit_signal("enemy_damaged", slot_index)
 	if health <= 0:
+		emit_signal("enemy_killed", slot_index)
 		queue_free()  # Remove crawler when health reaches 0
 
 func _on_area_entered(area: Area2D):
 	if area.is_in_group("players"):
 		_on_collision_with_player()
 	elif area.is_in_group("bullets"):
-		take_damage()
+		take_damage(area.slot_index)
 		area.deactivate()  # Call deactivate on the bullet
 
 func _on_collision_with_player():

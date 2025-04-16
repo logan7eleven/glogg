@@ -4,10 +4,10 @@ extends Area2D
 @export var pixels_per_step = 500
 
 # Stage-based fire rates in frames (at 30 FPS)
-var fire_rates = {
-	1: 0.25,   # Stage 1: 4 shots per second (250ms interval)
-	2: 0.125,  # Stage 2: 8 shots per second (125ms interval)
-	3: 0.083333  # Stage 3: 12 shots per second (83.3ms interval)
+var shots_per_second = {
+	1: 4,   # Stage 1: 4 shots per second
+	2: 8,   # Stage 2: 8 shots per second
+	3: 12   # Stage 3: 12 shots per second
 }
 var time_since_last_fire: float = 0.0
 var current_stage = 1
@@ -21,8 +21,21 @@ var fire_queued = false
 var cockpit_target_angle = 0.0
 var movement_queued = false
 var rotation_speed = 50.0
+var slot_manager: Node
+var fire_rates = {}
 
 const ROTATION_TOLERANCE = 0.03
+
+class FiringInterval:
+	var numerator: int
+	var denominator: int
+	
+	func _init(shots_per_sec: int):
+		numerator = 1
+		denominator = shots_per_sec
+	
+	func get_interval() -> float:
+		return float(numerator) / float(denominator)
 
 func _ready():
 	# Get viewport size and set constraints with margins that account for sprite size and scale
@@ -35,6 +48,12 @@ func _ready():
 	max_pos = Vector2(viewport_size.x - sprite_radius, viewport_size.y - sprite_radius)
 	
 	print("Stage ", current_stage, " - Fire Rate: ", 1.0/current_fire_rate, " shots per second")
+	
+	for stage in shots_per_second:
+		fire_rates[stage] = 1.0 / shots_per_second[stage]
+	
+	current_fire_rate = fire_rates[current_stage]
+	slot_manager.initialize_slots(shots_per_second[current_stage])
 	
 func _process (delta):
 	# Aiming and Shooting
@@ -52,11 +71,14 @@ func advance_stage():
 	current_stage = min(current_stage + 1, 3)  # Cap at stage 3
 	current_fire_rate = fire_rates[current_stage]
 	time_since_last_fire = 0.0  # Reset ftimer on stage change
+	slot_manager.initialize_slots(shots_per_second[current_stage])
 	print("Stage ", current_stage, " - Fire Rate: ", 1/current_fire_rate, " shots per second")
 
 func try_fire(aim_angle: float):
 	var bullet = get_parent().projectile_pool.get_bullet()
 	if bullet:
+		var current_slot_index = slot_manager.get_next_slot()
+		bullet.slot_index = current_slot_index
 		bullet.fire(gun.global_position, aim_angle)
 
 func _physics_process(delta):

@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var projectile_pool = $bullet_pool
 @onready var game_over_label = $game_over
+@onready var slot_manager = $slot_manager
 
 func _ready():
 	game_over_label.hide()
@@ -13,6 +14,7 @@ func _ready():
 
 	for i in players.keys():
 		var player: Area2D = load("res://glogg.tscn").instantiate()
+		player.slot_manager = slot_manager
 		player.position = players[i]
 		add_child(player)
 

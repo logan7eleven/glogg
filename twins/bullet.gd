@@ -6,6 +6,7 @@ var direction: Vector2
 var initial_position: Vector2
 var bullet_pool: Node
 var has_collided = false
+var slot_index: int = -1
 
 func init_pool(pool: Node):
 	bullet_pool = pool
@@ -22,7 +23,7 @@ func _physics_process (delta):
 		return
 	position += direction * bullet_speed * delta
 
-func fire(pos: Vector2, angle: float):
+func fire(pos: Vector2, angle: float, from_slot: int):
 	has_collided = false
 	monitoring = true
 	monitorable = true
@@ -32,6 +33,7 @@ func fire(pos: Vector2, angle: float):
 	visible = true
 	animated_sprite.frame = 0
 	animated_sprite.play()
+	slot_index = from_slot
 
 func _on_animation_finished():
 	animated_sprite.stop()
