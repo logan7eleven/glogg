@@ -24,6 +24,7 @@ func _physics_process (delta):
 	position += direction * bullet_speed * delta
 
 func fire(pos: Vector2, angle: float, from_slot: int):
+	print("Bullet fired with slot: ", from_slot)
 	has_collided = false
 	monitoring = true
 	monitorable = true

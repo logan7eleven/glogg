@@ -16,12 +16,6 @@ var current_slot: int = 0
 var stats_timer: Timer
 
 func _ready():
-	# Connect to any existing enemies
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		_connect_enemy_signals(enemy)
-	# Watch for new enemies
-	get_tree().node_added.connect(_on_node_added)
-	
 	# Set up timer for stats printing
 	stats_timer = Timer.new()
 	add_child(stats_timer)
@@ -35,24 +29,11 @@ func _print_stats():
 		print("Slot %d: Damage: %d, Kills: %d" % [i, slots[i].damage, slots[i].kills])
 	print("=====================\n")
 
-func _on_node_added(node: Node):
-	if node.is_in_group("enemies"):
-		_connect_enemy_signals(node)
-
-func _connect_enemy_signals(enemy: Node):
-	if not enemy.enemy_damaged.is_connected(record_damage):
-		enemy.enemy_damaged.connect(record_damage)
-	if not enemy.enemy_killed.is_connected(record_kill):
-		enemy.enemy_killed.connect(record_kill)
-
 # Initialize slots based on shots per second directly
 func initialize_slots(shots_per_sec: int):
 	slots.clear()
 	for i in range(shots_per_sec):
 		slots.append(SlotStats.new())
-	# Print initial stats setup
-	print("\n=== Initialized %d Slots ===" % shots_per_sec)
-	_print_stats()
 
 func get_next_slot() -> int:
 	var slot = current_slot

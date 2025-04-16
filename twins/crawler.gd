@@ -16,6 +16,7 @@ var bounce_timer = 0.0
 var bounce_movement = Vector2.ZERO
 var bounce_speed_multiplier = 0.5
 var collision_cooldown = 0.0
+var crawler_id: int = -1 # Will be set by level.gd
 
 signal enemy_damaged(slot_index: int)
 signal enemy_killed(slot_index: int)
@@ -31,6 +32,7 @@ func _ready():
 	add_to_group("enemies")
 	var hitbox = $HitBox
 	hitbox.area_entered.connect(_on_area_entered)
+	print("Crawler %d Health: %d" % [crawler_id, health])
 
 func _physics_process(delta):	
 	if !player:
@@ -100,7 +102,7 @@ func _physics_process(delta):
 
 func take_damage(slot_index: int):
 	health -= 1
-	print("Crawler Health:", health)
+	print("Crawler %d Health: %d" % [crawler_id, health])
 	emit_signal("enemy_damaged", slot_index)
 	if health <= 0:
 		emit_signal("enemy_killed", slot_index)

@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://dhslw2ygrmfx8"]
+[gd_scene load_steps=9 format=3 uid="uid://dhslw2ygrmfx8"]
 
 [ext_resource type="Script" uid="uid://cat3821w5n6fc" path="res://level.gd" id="1_8niqe"]
 [ext_resource type="Script" uid="uid://bjeynbd2f36m6" path="res://bullet_pool.gd" id="2_1gagn"]
 [ext_resource type="PackedScene" uid="uid://cg5pfiyyuo5js" path="res://bullet.tscn" id="3_8g7xs"]
 [ext_resource type="Texture2D" uid="uid://d4jg5njwab4st" path="res://background.png" id="4_0b4ue"]
+[ext_resource type="PackedScene" uid="uid://cmun287hqriat" path="res://bullet_slot_manager.tscn" id="5_f2txt"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0b4ue"]
 friction = 0.0
@@ -59,4 +60,4 @@ text = "GAME OVER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="slot_manager" type="Node" parent="."]
+[node name="slot_manager" parent="." instance=ExtResource("5_f2txt")]

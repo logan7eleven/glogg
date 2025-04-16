@@ -27,10 +27,18 @@ func _ready():
 		Vector2(viewport_size.x - 100, viewport_size.y - 100)
 	]
 
+	var crawler_counter: int = 0
+	
 	for pos in crawler_positions:
+		crawler_counter += 1
 		var crawler = load("res://crawler.tscn").instantiate()
+		crawler.crawler_id = crawler_counter
 		crawler.position = pos
 		add_child(crawler)
+		if crawler.has_signal("enemy_damaged"):
+			crawler.enemy_damaged.connect(slot_manager.record_damage)
+		if crawler.has_signal("enemy_killed"):
+			crawler.enemy_killed.connect(slot_manager.record_kill)
 		
 func game_over():
 	game_over_label.show()

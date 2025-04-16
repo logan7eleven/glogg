@@ -79,7 +79,7 @@ func try_fire(aim_angle: float):
 	if bullet:
 		var current_slot_index = slot_manager.get_next_slot()
 		bullet.slot_index = current_slot_index
-		bullet.fire(gun.global_position, aim_angle)
+		bullet.fire(gun.global_position, aim_angle, current_slot_index)
 
 func _physics_process(delta):
 	# Movement
