@@ -1,0 +1,113 @@
+[gd_scene load_steps=7 format=3 uid="uid://beq6pjnu4iwsg"]
+
+[ext_resource type="Script" uid="uid://tsjufbxpw76h" path="res://scooter.gd" id="1_yt17u"]
+[ext_resource type="Texture2D" uid="uid://ctw8cjayodaa5" path="res://clam_R.png" id="2_wvnhx"]
+[ext_resource type="Texture2D" uid="uid://dud7tee48m6io" path="res://clampearl_R.png" id="5_8kjy3"]
+
+[sub_resource type="Animation" id="Animation_l8hxa"]
+resource_name = "scoot"
+length = 4.0
+loop_mode = 1
+step = 0.25
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 0
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5),
+"transitions": PackedFloat32Array(999999, 999999, 999999, 999999, 999999, 999999, 999999, 999999),
+"update": 1,
+"values": [Vector2(1, 1), Vector2(-1, 1), Vector2(1, 1), Vector2(-1, 1), Vector2(1, 1), Vector2(-1, 1), Vector2(1, 1), Vector2(-1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("2_wvnhx"), ExtResource("5_8kjy3")]
+}
+
+[sub_resource type="Animation" id="Animation_7diq7"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_wvnhx")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_wvnhx"]
+_data = {
+&"RESET": SubResource("Animation_7diq7"),
+&"scoot": SubResource("Animation_l8hxa")
+}
+
+[node name="scooter" type="CharacterBody2D"]
+position = Vector2(533, 394)
+script = ExtResource("1_yt17u")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+scale = Vector2(2, 2)
+polygon = PackedVector2Array(3, -6, -1, -6, -1, -5, -2, -5, -2, -4, -3, -4, -3, -3, -4, -3, -4, -1, -5, -1, -5, 1, -6, 1, -6, 3, -5, 3, -5, 4, -4, 4, -4, 5, 5, 5, 5, 4, 6, 4, 6, 1, 3, 1, 3, -1, 4, -1, 4, -2, 6, -2, 6, -3, 5, -3, 5, -4, 4, -4, 4, -5, 3, -5)
+
+[node name="HitBox" type="Area2D" parent="."]
+scale = Vector2(2, 2)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HitBox"]
+polygon = PackedVector2Array(-1, -6, -1, -5, -2, -5, -2, -4, -3, -4, -3, -3, -4, -3, -4, -1, -5, -1, -5, 1, -6, 1, -6, 3, -5, 3, -5, 4, -4, 4, -4, 5, 5, 5, 5, 4, 6, 4, 6, 1, 3, 1, 3, -1, 4, -1, 4, -2, 6, -2, 6, -3, 5, -3, 5, -4, 4, -4, 4, -5, 3, -5, 3, -6)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 3
+scale = Vector2(2, 2)
+texture = ExtResource("2_wvnhx")
+
+[node name="Pivots" type="Node" parent="."]
+
+[node name="TopLeft" type="Marker2D" parent="Pivots"]
+position = Vector2(525, 388)
+
+[node name="BottomLeft" type="Marker2D" parent="Pivots"]
+position = Vector2(525, 404)
+
+[node name="TopRight" type="Marker2D" parent="Pivots"]
+position = Vector2(543, 388)
+
+[node name="BottomRight" type="Marker2D" parent="Pivots"]
+position = Vector2(543, 404)
+
+[node name="PivotTimer" type="Timer" parent="."]
+wait_time = 0.25
+autostart = true
+
+[node name="TargetTimer" type="Timer" parent="."]
+autostart = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_wvnhx")
+}
