@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://dl4c3avikl6tr"]
+
+[ext_resource type="Script" uid="uid://cn8o1hgyn8p0b" path="res://glogg.gd" id="1_p2ou0"]
+[ext_resource type="Texture2D" uid="uid://bfctgra55k10x" path="res://outer.png" id="2_ah6p6"]
+[ext_resource type="Texture2D" uid="uid://t81373j0tuon" path="res://inner.png" id="3_qpi53"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_qpi53"]
+radius = 17.1667
+
+[node name="glogg" type="Area2D"]
+scale = Vector2(0.5, 0.5)
+collision_mask = 2
+script = ExtResource("1_p2ou0")
+
+[node name="cannon" type="Sprite2D" parent="."]
+texture_filter = 3
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_ah6p6")
+
+[node name="gun" type="Marker2D" parent="cannon"]
+position = Vector2(36, 0)
+rotation = -1.5708
+scale = Vector2(0.5, 0.5)
+
+[node name="cockpit" type="Sprite2D" parent="."]
+texture_filter = 3
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("3_qpi53")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-0.5, 0)
+shape = SubResource("CircleShape2D_qpi53")

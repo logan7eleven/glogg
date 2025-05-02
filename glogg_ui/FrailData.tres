@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://7d7f4ym01lkv"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_nydye"]
+
+[resource]
+script = ExtResource("1_nydye")
+effect_id = "frail"
+display_name = "Frail"
+description_template = "Increases damage taken by {increase:.0f}% (+{level_bonus:.0f}% per Lvl)."
+values_per_level = [{
+"increase": 0.25,
+"level_bonus_increase": 0.1
+}]
+active_effect_script_path = "res://ActiveFrailEffect.gd"
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

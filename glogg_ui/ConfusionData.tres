@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://daheq70nxns2w"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_hq1om"]
+
+[resource]
+script = ExtResource("1_hq1om")
+effect_id = "confusion"
+display_name = "Confusion"
+description_template = "{chance:.0f}% (+{level_bonus:.0f}% per Lvl) chance to target random angle on orientation check."
+values_per_level = [{
+"chance": 0.25,
+"level_bonus_chance": 0.1
+}]
+active_effect_script_path = "res://ActiveConfusionEffect.gd"
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

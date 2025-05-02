@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://c1ci0i6rxip4y"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_sygs8"]
+
+[resource]
+script = ExtResource("1_sygs8")
+effect_id = "fear"
+display_name = "Fear"
+description_template = "Freezes enemy for {freeze_duration:.1f}s (+{duration_bonus:.1f}s per Lvl) when player is near (<100px)."
+values_per_level = [{
+"base_duration": 0.0,
+"freeze_duration": 1.0,
+"level_bonus_duration": 0.0,
+"level_bonus_freeze": 0.5
+}]
+active_effect_script_path = "res://ActiveFearEffect.gd"
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

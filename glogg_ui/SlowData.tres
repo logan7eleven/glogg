@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://tb6wk2qmf7g0"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_myucg"]
+
+[resource]
+script = ExtResource("1_myucg")
+effect_id = "slow"
+display_name = "Slow"
+description_template = "Decreases speed by 50% for {base_duration:.1f}s (+{level_bonus_duration:.1f}s per Lvl)."
+values_per_level = [{
+"base_duration": 1.0,
+"level_bonus_duration": "0.5"
+}]
+active_effect_script_path = "res://ActiveSlowEffect.gd"
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

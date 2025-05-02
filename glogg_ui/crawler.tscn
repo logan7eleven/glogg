@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://ug348wivf25d"]
+
+[ext_resource type="Script" uid="uid://cstocon6b7lat" path="res://crawler.gd" id="1_vawpx"]
+[ext_resource type="Texture2D" uid="uid://c2gvdhquqgsud" path="res://jelly.png" id="2_3n7dr"]
+
+[node name="crawler" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 15
+script = ExtResource("1_vawpx")
+
+[node name="HitBox" type="Area2D" parent="." groups=["enemies"]]
+collision_layer = 2
+collision_mask = 15
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="HitBox"]
+position = Vector2(0, 0.875)
+polygon = PackedVector2Array(-4.5, -9.875, -4.5, -8.375, -7.5, -8.375, -7.5, -5.375, -9, -5.375, -9, 0.625, -7.5, 0.625, -7.5, 3.625, -9, 3.625, -9, 8.125, -7.5, 8.125, -7.5, 6.625, -6, 6.625, -6, 2.125, -4.5, 2.125, -4.5, 8.125, -3, 8.125, -3, 6.625, -1.5, 6.625, -1.5, 2.125, 1.5, 2.125, 1.5, 6.625, 3, 6.625, 3, 8.125, 4.5, 8.125, 4.5, 2.125, 6, 2.125, 6, 6.625, 7.5, 6.625, 7.5, 8.125, 9, 8.125, 9, 6.625, 9, 3.625, 7.5, 3.625, 7.5, 0.625, 9, 0.625, 9, -5.375, 7.5, -5.375, 7.5, -8.375, 4.5, -8.375, 4.5, -9.875)
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+position = Vector2(0, 0.5)
+polygon = PackedVector2Array(-4.5, -9.5, -4.5, -8, -7.5, -8, -7.5, -5, -9, -5, -9, 1, -7.5, 1, -7.5, 4, -9, 4, -9, 8.5, -7.5, 8.5, -7.5, 7, -6, 7, -6, 2.5, -4.5, 2.5, -4.5, 8.5, -3, 8.5, -3, 7, -1.5, 7, -1.5, 2.5, 1.5, 2.5, 1.5, 7, 3, 7, 3, 8.5, 4.5, 8.5, 4.5, 2.5, 6, 2.5, 6, 7, 7.5, 7, 7.5, 8.5, 9, 8.5, 9, 4, 7.5, 4, 7.5, 1, 9, 1, 9, -5, 7.5, -5, 7.5, -8, 4.5, -8, 4.5, -9.5)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 3
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_3n7dr")

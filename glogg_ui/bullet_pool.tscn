@@ -1,0 +1,164 @@
+[gd_scene load_steps=9 format=3 uid="uid://bwhvrt6cpu4wu"]
+
+[ext_resource type="Script" uid="uid://ch05bgwr18cx6" path="res://bullet_pool.gd" id="1_cy6hj"]
+[ext_resource type="Texture2D" uid="uid://b1yrco5xavg3" path="res://bullet.png" id="2_1ho3s"]
+[ext_resource type="Texture2D" uid="uid://cxpj5ngi1v3yb" path="res://bullet2.png" id="3_e5exk"]
+[ext_resource type="Texture2D" uid="uid://dsqk0428vql8i" path="res://bullet3.png" id="4_s0ukm"]
+
+[sub_resource type="GDScript" id="GDScript_wym4v"]
+script/source = "extends Area2D
+
+@export var bullet_speed = 800
+@onready var animated_sprite = $AnimatedSprite2D
+var direction: Vector2
+var initial_position: Vector2
+var bullet_pool: Node
+var _min_collision_size: float
+var _substeps: int = 1
+var step_size = 1
+
+func init_pool(pool: Node):
+	bullet_pool = pool
+
+func _ready():
+	initial_position = position
+	var collision_shape = $CollisionShape2D
+	var shape_size = collision_shape.shape.size
+	_min_collision_size = min(shape_size.x, shape_size.y)
+	_update_substeps()
+	monitoring = false
+	monitorable = false
+	animated_sprite.animation_finished.connect(_on_animation_finished)
+	add_to_group(\"bullets\")
+
+func _update_substeps():
+	_substeps = ceili((bullet_speed * get_physics_process_delta_time()) / (_min_collision_size * 0.8)) + 1
+	_substeps = clampi(_substeps, 1, 8)
+
+func _physics_process (delta):
+	if not visible:
+		return
+	
+	var step_size = (bullet_speed * delta) as float / _substeps
+	
+	for _i in range(_substeps):
+		var step = direction * step_size
+		var space_state = get_world_2d().direct_space_state
+		var query = PhysicsRayQueryParameters2D.create(
+			position,
+			position + step,
+			collision_mask,
+			[self]
+		)
+		
+		var result = space_state.intersect_ray(query)
+		if result and result.collider.is_in_group(\"bounds\"):
+			deactivate()
+			return
+		
+		position += step
+
+func fire(pos: Vector2, angle: float):
+	monitoring = true
+	monitorable = true
+	position = pos
+	rotation = angle
+	direction = Vector2.RIGHT.rotated(rotation)
+	visible = true
+	_update_substeps()
+	animated_sprite.frame = 0
+	animated_sprite.play()
+
+func set_speed(speed: float):
+	bullet_speed = speed
+	_update_substeps()
+	
+func _on_animation_finished():
+	animated_sprite.stop()
+	animated_sprite.frame = animated_sprite.sprite_frames.get_frame_count(\"default\") - 1
+	
+func deactivate():
+	visible = false
+	set_deferred(\"monitoring\", false)
+	set_deferred(\"monitorable\", false)
+	animated_sprite.stop()
+	animated_sprite.frame = 0
+	if bullet_pool:
+		call_deferred(\"_safe_return_to_pool\")
+
+func _safe_return_to_pool():
+	bullet_pool.return_to_pool(self)
+
+func _on_area_entered(area: Area2D):
+	if area.is_in_group(\"bounds\"):
+		deactivate()
+	if area.is_in_group(\"enemies\"):
+		deactivate()
+"
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_2b2rl"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_1ho3s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_1ho3s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_1ho3s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_e5exk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s0ukm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_e5exk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s0ukm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_e5exk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s0ukm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_e5exk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s0ukm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_e5exk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s0ukm")
+}],
+"loop": false,
+"name": &"default",
+"speed": 15.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xqmrk"]
+size = Vector2(3, 4.00001)
+
+[sub_resource type="PackedScene" id="PackedScene_it2l2"]
+_bundled = {
+"conn_count": 1,
+"conns": PackedInt32Array(1073741827, 1073741826, 18, 17, 2, 0, 0),
+"editable_instances": [],
+"names": PackedStringArray("bullet", "Area2D", "visibility_layer", "collision_layer", "collision_mask", "script", "AnimatedSprite2D", "AnimatedSprite2D", "texture_filter", "rotation", "scale", "sprite_frames", "CollisionShape2D", "CollisionShape2D", "position", "rotation", "shape", "_on_area_entered", "area_entered"),
+"node_count": 3,
+"node_paths": [NodePath("."), NodePath("."), NodePath("."), NodePath(".")],
+"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 4, 2, 0, 3, 1, 4, 2, 5, 3, 0, 1073741824, 0, 7, 6, -1, 4, 8, 4, 9, 5, 10, 6, 11, 7, 0, 1073741825, 0, 13, 12, -1, 3, 14, 8, 15, 9, 16, 10, 0),
+"variants": [2, 8, 130, SubResource("GDScript_wym4v"), 3, 1.5708, Vector2(2, 2), SubResource("SpriteFrames_2b2rl"), Vector2(1.19209e-07, 0), 1.5708, SubResource("RectangleShape2D_xqmrk")],
+"version": 3
+}
+
+[node name="bullet_pool" type="Node"]
+script = ExtResource("1_cy6hj")
+bullet_scene = SubResource("PackedScene_it2l2")
