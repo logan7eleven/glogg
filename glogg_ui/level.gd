@@ -187,10 +187,10 @@ func game_over(message: String = "GAME OVER"):
 	game_is_over = true; is_boss_fight = false
 	cleanup_all_entities()
 	var label_to_show = game_over_label
-	var text_to_show = "GAME OVER\n(Press SPACE to return to Menu)"
+	var text_to_show = "GAME OVER"
 	if message == "YOU WIN!":
 		label_to_show = game_win_label # Use the win label
-		text_to_show = "YOU WIN!\n(Press SPACE to return to Menu)"
+		text_to_show = "YOU WIN!"
 	label_to_show.text = text_to_show; label_to_show.show()
 	process_mode = Node.PROCESS_MODE_ALWAYS # Allow input
 	if not get_tree().paused: SceneLoader.pause_game()

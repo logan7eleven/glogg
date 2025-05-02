@@ -108,10 +108,16 @@ func _on_upgrades_ready() -> void:
 		if not is_instance_valid(button): continue
 		var effect_res = upgrade_set_to_use[effect_key]
 		var target_slot_idx = target_slots[effect_key]
-		var current_level = GlobalState.get_slot_upgrade_data(target_slot_idx)["level"]
-		var next_level = min(current_level + 1, effect_res.max_level)
-		button.text = "[Slot %d] %s (L%d->L%d)" % [target_slot_idx, effect_res.display_name, current_level, next_level]
-		button.tooltip_text = effect_res.get_description(next_level)
+		var current_upgrade_data = GlobalState.get_slot_upgrade_data(target_slot_idx)
+		var current_level = current_upgrade_data["level"]
+		var current_resource = current_upgrade_data["resource"]
+		var display_level_text = ""
+		if is_instance_valid(current_resource) and current_resource == effect_res:
+			display_level_text = "(L%d -> L%d)" % [current_level, current_level + 1]
+		else:
+			display_level_text = "(Apply Lvl 1)"
+		button.text = "[Slot %d] %s %s" % [target_slot_idx, effect_res.display_name, display_level_text]
+		button.tooltip_text = effect_res.get_description(1)
 		var button_id = "button" + str(button_index)
 		current_offered_resources[button_id] = effect_res
 		current_target_slots[button_id] = target_slot_idx

@@ -5,8 +5,6 @@ extends Resource
 @export var effect_id: String = "unknown"
 @export var display_name: String = "Unknown Effect"
 @export_multiline var description_template: String = "Applies effect. Use {key}."
-# max_level REMOVED
-# max_enemy_stacks REMOVED
 @export var values_per_level: Array = [] # Single Dictionary: { "base_key": val, "bonus_key": val }
 @export var active_effect_script_path: String = ""
 
@@ -22,7 +20,6 @@ func get_calculated_value(level: int, base_key: String, bonus_key: String, defau
 	var data_dict = get_level_data_dict()
 	var base_value = data_dict.get(base_key, default_base)
 	var level_bonus = data_dict.get(bonus_key, 0.0)
-	# Level can now be high, ensure it's at least 1 for calculation
 	var effective_level = max(1, level)
 	# Calculation: base + bonus * (level - 1)
 	if typeof(base_value) == TYPE_FLOAT or typeof(level_bonus) == TYPE_FLOAT:

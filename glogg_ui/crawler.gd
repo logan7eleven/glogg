@@ -1,5 +1,5 @@
 # crawler.gd (Extends EnemyBase - Cleaned)
-extends EnemyBase
+extends "res://EnemyBase.gd"
 
 # --- Crawler Specific Movement Vars ---
 @export var amplitude = 150
@@ -22,7 +22,12 @@ var bounce_speed_multiplier = 0.5
 var collision_cooldown = 0.0
 
 func _ready():
-	super()._ready() # Call parent's ready function first!
+	#add_to_group("enemies_physics")
+	#_setup_hitbox()
+	#connect("body_entered", Callable(self, "_on_body_entered"))
+	#call_deferred("_find_player")
+	super()
+	
 	sprite = get_node_or_null("Sprite2D")
 	t = randf() * PI * 2
 	# _find_player is called by base class _ready->call_deferred
@@ -40,8 +45,8 @@ func _physics_process(delta):
 			bounce_movement = bounce_movement.bounce(bounce_collision.get_normal())
 			collision_cooldown = 0.05
 		return # Skip base processing while bouncing
-
-	super._physics_process(delta) # Call base class physics
+		
+	super(delta)
 
 # Implement Orientation Logic (Called by EnemyBase)
 func _perform_orientation(_delta: float):

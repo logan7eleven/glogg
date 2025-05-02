@@ -1,4 +1,5 @@
 # EnemyBase.gd (Revised for Node Effects - Cleaned)
+@tool
 class_name EnemyBase
 extends CharacterBody2D
 

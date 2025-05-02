@@ -1,24 +1,25 @@
-# ActiveFrailEffect.gd
+# ActiveFrailEffect.gd (No Duration)
 class_name ActiveFrailEffect
-extends ActiveStatusEffect
+extends "res://ActiveStatusEffect.gd" # Extend using path
 
 func _on_apply() -> bool:
-	if not target_enemy is EnemyBase: return false
-	_update_multiplier()
+	_update_multiplier() # Apply initial multiplier
+	# No timer needed
 	return true
 
 func _on_level_change(_old_level: int):
-	_update_multiplier() # Recalculate on level up
+	_update_multiplier() # Recalculate multiplier on level up
 
 func _on_remove():
-	if not is_instance_valid(target_enemy): return
-	if target_enemy.damage_taken_multipliers.has(effect_data.effect_id):
+	# Remove this effect's contribution from the enemy's dictionary
+	if target_enemy and target_enemy.damage_taken_multipliers.has(effect_data.effect_id):
 		target_enemy.damage_taken_multipliers.erase(effect_data.effect_id)
 
+# Calculates and applies the damage taken multiplier to the enemy
 func _update_multiplier():
-	if not is_instance_valid(target_enemy): return
-	var base_increase = effect_data.get_value_for_level(level, "increase", 0.0)
-	var bonus = effect_data.get_value_for_level(level, "level_bonus", 0.0)
-	var total_increase_percent = base_increase + (bonus * (level - 1))
-	var damage_taken_multiplier = 1.0 + total_increase_percent
+	if not target_enemy or not effect_data: return
+	# Calculate final increase percentage directly using the helper
+	var total_increase_percent = effect_data.get_calculated_value(level, "increase", "level_bonus_increase", 0.0)
+	var damage_taken_multiplier = max(0.0, 1.0 + total_increase_percent) # Ensure >= 0
+	# Update the enemy's modifier dictionary
 	target_enemy.damage_taken_multipliers[effect_data.effect_id] = damage_taken_multiplier
