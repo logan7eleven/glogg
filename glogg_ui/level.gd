@@ -28,6 +28,7 @@ const PLAYER_SCENE = preload("res://glogg.tscn")
 
 # --- Engine Methods ---
 func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	original_process_mode = process_mode
 
 	# Setup Labels & Timer (Assume nodes exist via @onready)
@@ -175,7 +176,7 @@ func start_boss_fight(boss_num: int):
 	cleanup_wave_entities()
 	
 	# Display Boss Text
-	game_over_label.text = "BOSS!" % boss_num; game_over_label.show()
+	game_over_label.text = "BOSS!"; game_over_label.show()
 	# Ensure player can move
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if player: player.can_move = true
@@ -212,7 +213,6 @@ func boss_hit():
 
 func _unhandled_input(event):
 	if is_boss_fight and not game_is_over and event.is_action_pressed("ui_accept"):
-		print("Level: Space pressed during Boss Fight - Skipping...")
 		get_viewport().set_input_as_handled() # Consume the input
 		boss_hit() # Call the same function as shooting the boss
 		return # Stop further input processing for this event
