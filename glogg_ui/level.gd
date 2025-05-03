@@ -112,23 +112,35 @@ func get_current_wave() -> int: return current_wave
 
 
 func spawn_enemies(count: int, use_fixed_positions: bool):
+	var scene_to_spawn = CRAWLER_SCENE
 	for i in range(count):
-		var enemy_instance = CRAWLER_SCENE.instantiate() as EnemyBase
-		enemy_instance.crawler_id = next_crawler_id # Assume variable exists
-		next_crawler_id += 1
+		var enemy_instance = scene_to_spawn.instantiate() # Instantiate first
+		# --- CORRECTED CHECK ---
+		if not enemy_instance is EnemyBase: # Check if it inherits correctly
+			if enemy_instance.has_method("apply_status_effect"): # Fallback check
+				pass # Assume okay if methods exist
+			else:
+				printerr("Spawn Error: Instanced scene does not extend EnemyBase or have required methods!")
+				enemy_instance.queue_free() # Clean up invalid instance
+				continue # Skip to next enemy
+		# --- END CORRECTION ---
 
-		if use_fixed_positions and i < v1_crawler_positions.size():
-			enemy_instance.position = v1_crawler_positions[i]
+		# Assign Type-Specific ID
+		# Use 'in' check which is safer for script variables
+		if "crawler_id" in enemy_instance: enemy_instance.crawler_id = next_crawler_id; next_crawler_id += 1
+		# elif "scooter_id" in enemy_instance: enemy_instance.scooter_id = next_scooter_id; next_scooter_id += 1
+
+		# Set position
+		if use_fixed_positions and i < v1_crawler_positions.size(): enemy_instance.position = v1_crawler_positions[i]
 		else: enemy_instance.position = _get_random_border_position()
 
-		# Connect signals (Assume they exist and manager is valid)
+		# Connect signals
 		if not enemy_instance.is_connected("damaged", Callable(slot_manager, "record_damage")):
 			enemy_instance.connect("damaged", Callable(slot_manager, "record_damage"))
 		if not enemy_instance.is_connected("killed", Callable(slot_manager, "record_kill")):
 			enemy_instance.connect("killed", Callable(slot_manager, "record_kill"))
 
 		add_child(enemy_instance)
-
 
 func _get_random_border_position() -> Vector2:
 	var viewport_rect = get_viewport_rect()
@@ -161,30 +173,17 @@ func start_boss_fight(boss_num: int):
 	if game_is_over: return
 	is_boss_fight = true; current_boss_num = boss_num
 	cleanup_wave_entities()
-	# Create placeholder target
-	boss_placeholder = Area2D.new(); var shape = CollisionShape2D.new()
-	shape.shape = CircleShape2D.new(); shape.shape.radius = 50
-	boss_placeholder.add_child(shape)
-	boss_placeholder.add_to_group("boss_target"); boss_placeholder.monitorable = true
-	boss_placeholder.position = get_viewport_rect().size / 2; add_child(boss_placeholder)
+	
 	# Display Boss Text
-	game_over_label.text = "BOSS %d\n(Shoot!)" % boss_num; game_over_label.show()
+	game_over_label.text = "BOSS!" % boss_num; game_over_label.show()
 	# Ensure player can move
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if player: player.can_move = true
 
-
-func boss_hit():
-	if not is_boss_fight: return
-	is_boss_fight = false
-	if boss_placeholder: boss_placeholder.queue_free(); boss_placeholder = null
-	game_over_label.hide()
-	SceneLoader.post_boss_victory(current_boss_num) # Tell SceneLoader
-
-
 func game_over(message: String = "GAME OVER"):
 	if game_is_over: return
 	game_is_over = true; is_boss_fight = false
+	SceneLoader.print_final_slot_stats()
 	cleanup_all_entities()
 	var label_to_show = game_over_label
 	var text_to_show = "GAME OVER"
@@ -195,8 +194,28 @@ func game_over(message: String = "GAME OVER"):
 	process_mode = Node.PROCESS_MODE_ALWAYS # Allow input
 	if not get_tree().paused: SceneLoader.pause_game()
 
+func boss_hit():
+	if not is_boss_fight: return
+	print("Level: Boss %d Placeholder Hit/Skipped! Proceeding..." % current_boss_num)
+	is_boss_fight = false # Clear flag
+
+	# Clean up placeholder and text
+	if is_instance_valid(boss_placeholder):
+		boss_placeholder.queue_free(); boss_placeholder = null
+	if is_instance_valid(game_over_label):
+		game_over_label.hide()
+
+	# Tell SceneLoader boss is defeated
+	# Ensure SceneLoader exists (it's an autoload, should be fine)
+	SceneLoader.post_boss_victory(current_boss_num)
+
 
 func _unhandled_input(event):
+	if is_boss_fight and not game_is_over and event.is_action_pressed("ui_accept"):
+		print("Level: Space pressed during Boss Fight - Skipping...")
+		get_viewport().set_input_as_handled() # Consume the input
+		boss_hit() # Call the same function as shooting the boss
+		return # Stop further input processing for this event
 	if game_is_over and event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled() # Handle input first
 		process_mode = original_process_mode

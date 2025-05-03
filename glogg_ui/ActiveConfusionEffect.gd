@@ -3,20 +3,20 @@ class_name ActiveConfusionEffect
 extends "res://ActiveStatusEffect.gd" # Extend using path
 
 func _on_apply() -> bool:
-	# Connect to signal emitted by EnemyBase before it decides orientation target
+	if not target_enemy is EnemyBase: return false
 	if not target_enemy.is_connected("orientation_requested", Callable(self, "_on_target_orientation_requested")):
 		target_enemy.connect("orientation_requested", Callable(self, "_on_target_orientation_requested"))
+	_start_or_add_duration(false) # Set initial duration
 	return true
 
 func _on_level_change(_old_level: int):
-	# Level change affects chance used in _on_target_orientation_requested
-	# No timer to refresh
-	pass
-
+	_start_or_add_duration(true) 
+	
 func _on_remove():
-	# Disconnect signal
-	if target_enemy.is_connected("orientation_requested", Callable(self, "_on_target_orientation_requested")):
-		target_enemy.disconnect("orientation_requested", Callable(self, "_on_target_orientation_requested"))
+	if is_instance_valid(target_enemy):
+		if target_enemy.is_connected("orientation_requested", Callable(self, "_on_target_orientation_requested")):
+			target_enemy.disconnect("orientation_requested", Callable(self, "_on_target_orientation_requested"))
+	if is_instance_valid(duration_timer): duration_timer.stop() # Stop internal timer
 
 # Called by signal from EnemyBase before it tries to orient
 func _on_target_orientation_requested():

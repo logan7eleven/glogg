@@ -1,7 +1,7 @@
 # glogg.gd (Cleaned with can_move flag)
 extends Area2D
 
-@export var pixels_per_step = 500
+@export var pixels_per_step = 200
 @onready var gun = $cannon/gun
 @onready var cockpit = $cockpit
 @onready var cannon = $cannon

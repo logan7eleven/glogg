@@ -4,12 +4,12 @@ extends "res://ActiveStatusEffect.gd" # Extend using path
 
 const SPEED_INCREASE = 0.5
 var was_active: bool = false
-var duration_timer: Timer # Internal timer variable
 
 func _on_apply() -> bool:
-	if not target_enemy is EnemyBase: return false
+	if not target_enemy is EnemyBase: 
+		return false
 	_apply_modifier()
-	_start_or_refresh_duration_timer() # Start/refresh timer
+	_start_or_add_duration(false) # Call base helper to set initial duration
 	return true
 
 func _on_level_change(_old_level: int):
@@ -17,8 +17,8 @@ func _on_level_change(_old_level: int):
 	_start_or_refresh_duration_timer() # Refresh timer duration
 
 func _on_remove():
-	_remove_modifier()
-	if duration_timer: duration_timer.stop() # Stop timer on removal
+	_remove_modifier() # Clean up modifier
+	if is_instance_valid(duration_timer): duration_timer.stop()
 
 func _apply_modifier():
 	if not target_enemy: return
@@ -40,4 +40,4 @@ func _start_or_refresh_duration_timer():
 		duration_timer.wait_time = duration
 		duration_timer.start()
 	elif duration_timer: # Stop if duration is 0 or less
-		 duration_timer.stop()
+		duration_timer.stop()

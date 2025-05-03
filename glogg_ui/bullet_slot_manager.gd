@@ -49,16 +49,12 @@ func get_slot_stats(slot_index: int) -> Dictionary:
 func reset_slot_stats():
 	for slot in slots: slot.reset()
 
-func get_performance_slots() -> Dictionary:
-	""" Calculates indices for Most Hits (Spikes), Least Hits (Confusion), Most Kills (Frail). """
-	if slots.is_empty(): return {"spikes": -1, "confusion": -1, "frail": -1}
-	var most_hits = -1; var mh_slot = 0
-	var least_hits = INF; var lh_slot = 0
-	var most_kills = -1; var mk_slot = 0
+func get_most_hits_slot() -> int:
+	if slots.is_empty(): return -1
+	var most_hits = -1
+	var mh_slot = 0
 	for i in range(slots.size()):
-		var s = slots[i]
-		if s.hits > most_hits: most_hits = s.hits; mh_slot = i
-		if s.hits < least_hits: least_hits = s.hits; lh_slot = i
-		if s.kills > most_kills: most_kills = s.kills; mk_slot = i
-		# Add tie-breaking logic here if desired
-	return {"spikes": mh_slot, "confusion": lh_slot, "frail": mk_slot} # Use effect ID as key
+		if slots[i].hits > most_hits:
+			most_hits = slots[i].hits
+			mh_slot = i
+	return mh_slot

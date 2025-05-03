@@ -8,8 +8,8 @@ effect_id = "slow"
 display_name = "Slow"
 description_template = "Decreases speed by 50% for {base_duration:.1f}s (+{level_bonus_duration:.1f}s per Lvl)."
 values_per_level = [{
-"base_duration": 1.0,
-"level_bonus_duration": "0.5"
+"base_duration": 3.0,
+"level_bonus_duration": "1.0"
 }]
 active_effect_script_path = "res://ActiveSlowEffect.gd"
 metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

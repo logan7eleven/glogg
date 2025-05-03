@@ -3,17 +3,20 @@ class_name ActiveFrailEffect
 extends "res://ActiveStatusEffect.gd" # Extend using path
 
 func _on_apply() -> bool:
-	_update_multiplier() # Apply initial multiplier
-	# No timer needed
+	if not target_enemy is EnemyBase: return false
+	_update_multiplier()
+	_start_or_add_duration(false) # Call base helper to set initial duration
 	return true
 
 func _on_level_change(_old_level: int):
 	_update_multiplier() # Recalculate multiplier on level up
+	_start_or_add_duration(true) # Call base helper to add duration
 
 func _on_remove():
-	# Remove this effect's contribution from the enemy's dictionary
-	if target_enemy and target_enemy.damage_taken_multipliers.has(effect_data.effect_id):
-		target_enemy.damage_taken_multipliers.erase(effect_data.effect_id)
+	# Perform Frail-specific cleanup FIRST
+	if is_instance_valid(target_enemy): # Check validity before accessing
+		if target_enemy.damage_taken_multipliers.has(effect_data.effect_id):
+			target_enemy.damage_taken_multipliers.erase(effect_data.effect_id)
 
 # Calculates and applies the damage taken multiplier to the enemy
 func _update_multiplier():

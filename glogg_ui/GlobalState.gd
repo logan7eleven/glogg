@@ -13,9 +13,9 @@ var enemies_per_wave_threshold: int = 4
 var slot_upgrade_data: Dictionary = {}
 
 func _ready():
-	initialize_slot_upgrades()
+	initialize_slot_upgrades(unlocked_slots)
 
-func initialize_slot_upgrades():
+func initialize_slot_upgrades(_num_slots_from_signal: int):
 	var old_data = slot_upgrade_data.duplicate()
 	slot_upgrade_data.clear()
 	for i in range(unlocked_slots):
@@ -48,7 +48,7 @@ func unlock_next_slots(boss_level: int):
 	elif boss_level == 2: slots_to_add = 4 # To 12
 	if slots_to_add > 0:
 		unlocked_slots += slots_to_add
-		initialize_slot_upgrades()
+		initialize_slot_upgrades(unlocked_slots)
 		emit_signal("slots_unlocked", unlocked_slots)
 
 func increment_enemies_destroyed():

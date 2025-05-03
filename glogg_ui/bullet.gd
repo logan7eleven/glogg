@@ -1,7 +1,7 @@
 # bullet.gd (Apply Damage OR Effect - Cleaned)
 extends Area2D
 
-@export var bullet_speed = 800
+@export var bullet_speed = 450
 @onready var animated_sprite = $AnimatedSprite2D
 
 var direction: Vector2 = Vector2.ZERO
@@ -77,26 +77,28 @@ func _on_area_entered(area: Area2D):
 
 	# 3. Check for Enemy HitBox
 	if area.is_in_group("enemies"):
-		if slot_index == -1: deactivate(); return # Ignore invalid slot hits
-
+		if slot_index == -1: deactivate(); return
 		var target_enemy = area.owner if area.owner else area.get_parent()
-		if not is_instance_valid(target_enemy) or not target_enemy is EnemyBase:
-			deactivate(); return # Ignore invalid targets
+
+		# --- CORRECTED CHECK (use has_method as fallback if class_name fails) ---
+		var is_valid_enemy = false
+		if target_enemy is EnemyBase: # Try class_name first if it exists
+			is_valid_enemy = true
+		elif is_instance_valid(target_enemy) and target_enemy.has_method("apply_status_effect"): # Fallback check
+			is_valid_enemy = true
+
+		if not is_valid_enemy:
+		# --- END CORRECTION ---
+			# printerr("Bullet hit non-EnemyBase in 'enemies' group: %s" % target_enemy) # Optional log
+			deactivate(); return
 
 		var upgrade_data = GlobalState.get_slot_upgrade_data(slot_index)
-		var effect_resource = upgrade_data["resource"] as StatusEffectData # Use Data resource type
+		var effect_resource = upgrade_data["resource"] as StatusEffectData
 		var effect_level = upgrade_data["level"]
 
-		# --- Decide: Apply Effect OR Base Damage ---
 		if is_instance_valid(effect_resource):
-			if target_enemy.has_method("apply_status_effect"):
-				target_enemy.apply_status_effect(effect_resource, effect_level, slot_index) # Pass slot index too
-			else: printerr("Bullet: Target enemy '%s' missing apply_status_effect method!" % target_enemy.name)
+			target_enemy.apply_status_effect(effect_resource, effect_level, slot_index)
 		else:
-			var base_damage = GlobalState.BASE_DAMAGE
-			if target_enemy.has_method("take_damage"):
-				target_enemy.take_damage(base_damage, slot_index)
-			else: printerr("Bullet: Target enemy '%s' missing take_damage method!" % target_enemy.name)
+			target_enemy.take_damage(GlobalState.BASE_DAMAGE, slot_index)
 
-		deactivate()
-		return
+		deactivate(); return
