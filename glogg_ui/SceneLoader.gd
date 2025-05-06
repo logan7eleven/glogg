@@ -1,4 +1,4 @@
-# SceneLoader.gd (Correct Upgrade Offering Logic - Full Script)
+# SceneLoader.gd (Correct Upgrade Offering Logic - Full Script - Pre-Boss Upgrade)
 extends Node
 
 var is_game_paused := false
@@ -30,7 +30,6 @@ var current_offered_choices: Array = []
 func _ready() -> void:
 	# Connect to the signal from GlobalState when kill threshold is met
 	GlobalState.connect("upgrades_ready", Callable(self, "_on_upgrades_ready"))
-	print("SceneLoader Ready.") # Optional: Confirm ready state
 
 # --- Pause/Resume Control ---
 
@@ -38,59 +37,42 @@ func pause_game():
 	# Directly set pause state
 	get_tree().paused = true
 	is_game_paused = true
-	print("⏸ Game paused (set by SceneLoader)")
 
 func resume_game():
 	# Directly set resume state
 	get_tree().paused = false
 	is_game_paused = false
-	print("▶️ Game resumed (set by SceneLoader)")
 
-# --- Upgrade/Wave Logic ---
+func _handle_upgrades_ready_deferred():
+	call_deferred("_on_upgrades_ready")
 
 # Called when GlobalState signals enough enemies killed
 func _on_upgrades_ready() -> void:
-	# Prevent duplicate UI if already showing
-	if is_instance_valid(upgrade_ui_instance) and upgrade_ui_instance.is_inside_tree():
-		printerr("SceneLoader: Upgrade UI already visible.")
-		return
-
-	# Get reference to the current level scene
+	# Prevent running if UI already up or game ended while deferred
+	if is_instance_valid(upgrade_ui_instance): return
 	var level_node = get_tree().current_scene
-	if not is_instance_valid(level_node) or not level_node.has_method("get_current_wave"):
-		printerr("SceneLoader: Cannot find Level or get_current_wave method.")
-		return
+	if not is_instance_valid(level_node) or not level_node.has_method("get_current_wave"): return
+	if level_node.game_is_over: return # Check if game ended
 
 	# Get wave number and calculate the index of the wave just completed
-	var current_wave_num = level_node.get_current_wave()
-	var completed_wave_index = current_wave_num - 1 # Wave index just finished (0 to 11)
-
-	print("SceneLoader: Completed Wave Index: %d" % completed_wave_index)
+	var completed_wave_index = level_node.get_current_wave() - 1
+	print("Completed Wave %d" % (completed_wave_index + 1)) # Add 1 for display
 
 	# --- 1. CHECK FOR WIN CONDITION ---
 	# Win after completing Wave 12 (index 11) - Skip Upgrade UI on Win
 	if completed_wave_index >= 11:
-		print("SceneLoader: Wave 12 Completed - Triggering WIN!")
+		print("Wave 12 Completed - Triggering WIN!")
 		if level_node.has_method("game_over"):
 			level_node.game_over("YOU WIN!") # Call level's game over function with win message
 		return # Stop processing here if game is won
 
-	# --- 2. CHECK FOR BOSS FIGHT TRIGGER ---
-	# Trigger boss after waves 4, 8 (indices 3, 7)
-	var boss_num = 0
-	if completed_wave_index == 3: boss_num = 1
-	elif completed_wave_index == 7: boss_num = 2
-	# No boss trigger after wave 11, handled by win condition above
+	# --- 2. CHECK FOR BOSS FIGHT TRIGGER (BUT DON'T START YET) ---
+	# We check if this wave *would* trigger a boss, but proceed to upgrades first.
+	var is_boss_trigger_wave = false
+	if completed_wave_index == 3 or completed_wave_index == 7: # Waves 4 and 8 completed
+		is_boss_trigger_wave = true
 
-	if boss_num > 0:
-		print("SceneLoader: Triggering Boss Fight %d after wave %d." % [boss_num, completed_wave_index + 1])
-		if level_node.has_method("start_boss_fight"):
-			level_node.start_boss_fight(boss_num) # Tell level to handle boss setup
-		else:
-			printerr("SceneLoader: Level node missing start_boss_fight method!")
-		return # Stop processing here for boss fight
-
-	# --- 3. PRINT SLOT STATS (If not boss/win wave) ---
+	# --- 3. PRINT SLOT STATS ---
 	var slot_manager = level_node.get_node_or_null("SlotManager")
 	if is_instance_valid(slot_manager) and slot_manager.has_method("get_slot_stats"):
 		print("\n--- Slot Stats for Completed Wave ---")
@@ -106,15 +88,14 @@ func _on_upgrades_ready() -> void:
 	# Continue even if manager invalid
 
 	# --- 4. GENERATE UPGRADE CHOICES ---
-	current_offered_choices = _generate_upgrade_choices(slot_manager)
+	current_offered_choices = _generate_upgrade_choices(slot_manager, completed_wave_index)
 
 	# Check if we have enough choices (ideally 3)
 	if current_offered_choices.size() < 1: # Need at least 1 valid choice
 		printerr("SceneLoader: Could not generate any valid upgrade choices. Skipping.")
-		_proceed_without_upgrade(level_node, slot_manager); return
+		_proceed_without_upgrade(level_node, slot_manager, is_boss_trigger_wave, completed_wave_index); return # Pass boss info
 	# Pad with random choices if less than 3 generated
 	while current_offered_choices.size() < 3:
-		print("SceneLoader: Padding upgrade choices.")
 		var random_slot = randi_range(0, GlobalState.unlocked_slots - 1)
 		var random_effect = ALL_EFFECTS.pick_random()
 		var padded_choice = {"slot": random_slot, "resource": random_effect}
@@ -138,11 +119,11 @@ func _on_upgrades_ready() -> void:
 	# Safety checks for UI structure
 	if not vbox or vbox.get_child_count() < 3:
 		printerr("SceneLoader: UpgradeUI structure incorrect (needs Panel/VBoxContainer with >= 3 children).")
-		_cleanup_and_proceed(level_node, slot_manager); return
+		_cleanup_and_proceed(level_node, slot_manager, is_boss_trigger_wave, completed_wave_index); return # Pass boss info
 	var buttons = [vbox.get_child(0), vbox.get_child(1), vbox.get_child(2)]
 	if not buttons[0] or not buttons[1] or not buttons[2]:
 		printerr("SceneLoader: Could not find all three buttons in UpgradeUI VBoxContainer.")
-		_cleanup_and_proceed(level_node, slot_manager); return
+		_cleanup_and_proceed(level_node, slot_manager, is_boss_trigger_wave, completed_wave_index); return # Pass boss info
 
 	# Configure buttons using current_offered_choices array
 	for i in range(buttons.size()):
@@ -169,8 +150,8 @@ func _on_upgrades_ready() -> void:
 		# Tooltip shows description based on base values in resource for now
 		button.tooltip_text = effect_res.get_description(1) # Show Lvl 1 description
 
-		# Connect signal, passing button index (0, 1, or 2)
-		var args = [i]
+		# Connect signal, passing button index (0, 1, or 2) and completed wave index
+		var args = [i, completed_wave_index] # Pass wave index too
 		# Ensure only one connection exists
 		for conn in button.get_signal_connection_list("pressed"):
 			if conn.callable == Callable(self, "_on_upgrade_button_pressed"):
@@ -179,28 +160,25 @@ func _on_upgrades_ready() -> void:
 
 	buttons[0].grab_focus() # Focus first available button
 	pause_game() # Pause game after UI is set up
-	print("🚀 Upgrade UI shown — player will choose upgrade...")
 
 
 # --- Helper Functions for Upgrade Choice Logic ---
 
 # Generates the 3 upgrade choices based on rules
-func _generate_upgrade_choices(slot_manager) -> Array:
+func _generate_upgrade_choices(slot_manager, completed_wave_index: int) -> Array:
 	var choices = []
 	var available_effects = ALL_EFFECTS.duplicate() # Pool of effects to pick from
 	var rng = RandomNumberGenerator.new(); rng.randomize()
-	var level_node = get_tree().current_scene
-	var completed_wave_index = level_node.get_current_wave() - 1 if is_instance_valid(level_node) else -1
 
 	# --- Choice 1 ---
-	var choice1 = _get_choice_1(available_effects, rng)
+	var choice1 = _get_choice_1(available_effects, completed_wave_index)
 	if choice1:
 		choices.append(choice1)
 		if choice1.get("was_random", false) and choice1.resource in available_effects:
 			available_effects.erase(choice1.resource)
 
 	# --- Choice 2 ---
-	var choice2 = _get_choice_2(slot_manager, available_effects, rng)
+	var choice2 = _get_choice_2(slot_manager, available_effects)
 	if choice2:
 		var attempts = 0
 		while attempts < 10 and choices.size() > 0 and _is_duplicate_offer(choice2, choices):
@@ -215,11 +193,10 @@ func _generate_upgrade_choices(slot_manager) -> Array:
 	# --- Choice 3 ---
 	var choice3 = null
 	if completed_wave_index == 0: # Is it the first upgrade (after wave 1)?
-		print("SceneLoader: First upgrade - Choice 3 is random slot + random effect.")
-		choice3 = _get_choice_3_random_slot(available_effects, rng) # Use special helper for first time
+		choice3 = _get_choice_3_random_slot(available_effects) # Use special helper for first time
 	else:
 		# Normal logic: Lowest free slot, random effect
-		choice3 = _get_choice_3_lowest_free(available_effects, rng)
+		choice3 = _get_choice_3_lowest_free(available_effects)
 
 	if choice3:
 		# Ensure unique from choice 1 and 2
@@ -235,7 +212,7 @@ func _generate_upgrade_choices(slot_manager) -> Array:
 
 	return choices
 
-func _get_choice_3_lowest_free(available_effects, rng):
+func _get_choice_3_lowest_free(available_effects):
 	var target_slot = _find_lowest_free_slot()
 	if target_slot == -1: target_slot = 0 # Fallback
 	if available_effects.is_empty(): return null
@@ -243,11 +220,10 @@ func _get_choice_3_lowest_free(available_effects, rng):
 	return {"slot": target_slot, "resource": random_effect}
 
 # --- Choice 3 Helper (First Time: Random Slot) ---
-func _get_choice_3_random_slot(available_effects, rng):
-	# Pick a random *currently unlocked* slot
-	var target_slot = rng.randi_range(0, GlobalState.unlocked_slots - 1)
+func _get_choice_3_random_slot(available_effects): # No return type hint, removed rng
+	var target_slot = randi_range(0, GlobalState.unlocked_slots - 1) # Uses global RNG
 	if available_effects.is_empty(): return null
-	var random_effect = available_effects.pick_random()
+	var random_effect = available_effects.pick_random() # Uses internal RNG
 	return {"slot": target_slot, "resource": random_effect}
 
 # Helper to check if a new offer duplicates an existing one
@@ -258,38 +234,40 @@ func _is_duplicate_offer(new_offer: Dictionary, existing_offers: Array) -> bool:
 	return false
 
 # Choice 1 Helper: Level up existing or random new on free slot
-func _get_choice_1(available_effects, rng):
+func _get_choice_1(available_effects, completed_wave_index: int): # No return type hint, removed rng
 	var upgraded_slots_data = []
 	for i in range(GlobalState.unlocked_slots):
 		var data = GlobalState.get_slot_upgrade_data(i)
 		if data["resource"] != null:
 			upgraded_slots_data.append({"slot": i, "resource": data["resource"]})
 
-	if upgraded_slots_data.size() >= 3:
-		# Randomly pick an already upgraded slot and offer level up
-		return upgraded_slots_data[rng.randi_range(0, upgraded_slots_data.size() - 1)]
-	else:
-		# Pick lowest free slot
-		var target_slot = _find_lowest_free_slot()
-		if target_slot == -1: target_slot = 0 # Fallback
-		# Offer random NEW effect
+	# Logic based on wave (First 2 waves prioritize NEW effects on RANDOM slots)
+	if completed_wave_index < 2:
 		if available_effects.is_empty(): return null
+		# Pick a random unlocked slot
+		var target_slot = randi_range(0, GlobalState.unlocked_slots - 1)
 		var random_effect = available_effects.pick_random()
+		# print("Choice 1 (Wave %d): Offering NEW effect %s for random slot %d" % [completed_wave_index + 1, random_effect.effect_id, target_slot])
 		return {"slot": target_slot, "resource": random_effect, "was_random": true}
+	else:
+		# After Wave 3 onwards: Prioritize leveling up existing random effect
+		if not upgraded_slots_data.is_empty():
+			# Offer level up for a random existing upgraded slot
+			var choice = upgraded_slots_data.pick_random() # Use pick_random here too
+			# print("Choice 1 (Wave %d): Offering level up for effect %s on slot %d" % [completed_wave_index + 1, choice.resource.effect_id, choice.slot])
+			return choice
+		else:
+			# Fallback if NO slots upgraded yet: Offer NEW effect to RANDOM slot
+			if available_effects.is_empty(): return null
+			var target_slot = randi_range(0, GlobalState.unlocked_slots - 1) # Random slot
+			var random_effect = available_effects.pick_random()
+			return {"slot": target_slot, "resource": random_effect, "was_random": true}
 
 # Choice 2 Helper: Most Hits slot, random effect
-func _get_choice_2(slot_manager, available_effects, rng):
+func _get_choice_2(slot_manager, available_effects):
 	if not slot_manager: return null
 	var target_slot = slot_manager.get_most_hits_slot()
 	if target_slot < 0: target_slot = 0 # Fallback
-	if available_effects.is_empty(): return null
-	var random_effect = available_effects.pick_random()
-	return {"slot": target_slot, "resource": random_effect}
-
-# Choice 3 Helper: Lowest Free Slot, random effect
-func _get_choice_3(available_effects, rng):
-	var target_slot = _find_lowest_free_slot()
-	if target_slot == -1: target_slot = 0 # Fallback
 	if available_effects.is_empty(): return null
 	var random_effect = available_effects.pick_random()
 	return {"slot": target_slot, "resource": random_effect}
@@ -301,63 +279,121 @@ func _find_lowest_free_slot() -> int:
 	return -1 # Return -1 if no free slots found
 
 # Helper to proceed if UI fails or is skipped
-func _proceed_without_upgrade(level_node, slot_manager):
+func _proceed_without_upgrade(level_node, slot_manager, is_boss_trigger_wave: bool, completed_wave_index: int):
 	if slot_manager: slot_manager.reset_slot_stats()
 	GlobalState.reset_enemies_destroyed()
-	if level_node and level_node.has_method("start_next_wave"):
+
+	# Clean up bullets before repositioning player/starting next phase
+	if level_node and level_node.has_method("cleanup_active_bullets"):
+		level_node.cleanup_active_bullets()
+
+	# Reset Player Position
+	var player = get_tree().get_first_node_in_group("players") as Node2D
+	if player: player.global_position = Vector2(600, 400)
+
+	# Decide next step: Boss or Next Wave
+	if is_boss_trigger_wave:
+		var boss_num = 1 if completed_wave_index == 3 else 2
+		if level_node and level_node.has_method("start_boss_fight"):
+			level_node.start_boss_fight(boss_num)
+	elif level_node and level_node.has_method("start_level_countdown"):
+		level_node.start_level_countdown()
+	elif level_node and level_node.has_method("start_next_wave"): # Fallback
 		level_node.call("start_next_wave")
+	else:
+		printerr("SceneLoader: Cannot start next wave/boss (skipped upgrade).")
+
 
 # Helper to cleanup UI and proceed if setup fails
-func _cleanup_and_proceed(level_node, slot_manager):
+func _cleanup_and_proceed(level_node, slot_manager, is_boss_trigger_wave: bool, completed_wave_index: int):
 	if upgrade_ui_instance: upgrade_ui_instance.queue_free(); upgrade_ui_instance = null
 	if get_tree().paused: resume_game()
-	_proceed_without_upgrade(level_node, slot_manager)
+	_proceed_without_upgrade(level_node, slot_manager, is_boss_trigger_wave, completed_wave_index)
+
 
 # --- Called when upgrade button pressed ---
-func _on_upgrade_button_pressed(button_index: int) -> void:
+func _on_upgrade_button_pressed(button_index: int, completed_wave_index: int) -> void: # Added wave index param
+	var level_node = get_tree().current_scene
 	if button_index < 0 or button_index >= current_offered_choices.size():
 		printerr("SceneLoader: Invalid button index received: %d" % button_index); return
 
 	# Get the choice data associated with the pressed button index
 	var chosen_data = current_offered_choices[button_index]
 	var target_slot_index = chosen_data["slot"]
-	var chosen_resource = chosen_data["resource"]
+	var chosen_resource = chosen_data["resource"] # This is the StatusEffectData to apply
 
-	if is_instance_valid(chosen_resource) and target_slot_index != -1:
-		GlobalState.apply_slot_upgrade(target_slot_index, chosen_resource)
-	else: printerr("SceneLoader: Invalid resource/slot for button index %d." % button_index)
+	if not is_instance_valid(chosen_resource) or target_slot_index == -1:
+		printerr("SceneLoader: Invalid resource/slot for button index %d." % button_index)
+		if upgrade_ui_instance: upgrade_ui_instance.queue_free(); upgrade_ui_instance = null
+		if get_tree().paused: resume_game() # Ensure game isn't stuck paused
+		# Decide next step even on failure (might need adjustment based on desired behavior)
+		var is_boss_trigger_wave = (completed_wave_index == 3 or completed_wave_index == 7)
+		_proceed_without_upgrade(level_node, null, is_boss_trigger_wave, completed_wave_index) # Pass null for slot_manager if needed
+		return # Stop processing this function
+
+	# --- Get Slot State BEFORE Applying Upgrade ---
+	var current_slot_data = GlobalState.get_slot_upgrade_data(target_slot_index)
+	var current_resource = current_slot_data["resource"] # Resource currently on the slot (or null)
+
+	# --- Apply the upgrade ---
+	GlobalState.apply_slot_upgrade(target_slot_index, chosen_resource)
+
+	# --- Print Specific Message Based on Previous State ---
+	if current_resource == chosen_resource:
+		# Case 1: Level Up - GlobalState.apply_slot_upgrade already prints this message.
+		# We don't need to print anything extra here.
+		pass
+	elif current_resource == null:
+		# Case 2: Added to Empty Slot
+		print("Added '%s' to slot %d" % [chosen_resource.display_name, target_slot_index])
+	else:
+		# Case 3: Overwrote Existing Effect
+		print("Overwrote '%s' on slot %d, added '%s'" % [current_resource.display_name, target_slot_index, chosen_resource.display_name])
 
 	# Reset counters and stats
 	GlobalState.reset_enemies_destroyed()
-	var level_node = get_tree().current_scene
 	var slot_manager = level_node.get_node_or_null("SlotManager") if level_node else null
 	if slot_manager: slot_manager.reset_slot_stats()
 
 	# Clean up UI
 	if upgrade_ui_instance: upgrade_ui_instance.queue_free(); upgrade_ui_instance = null
 
-	# Resume game
+	# Resume game FIRST
 	resume_game()
+
+	# Clean up bullets before repositioning player
+	if level_node and level_node.has_method("cleanup_active_bullets"):
+		level_node.cleanup_active_bullets()
 
 	# Reset Player Position
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if player: player.global_position = Vector2(600, 400)
 
-	# Start the next wave
-	if level_node and level_node.has_method("start_next_wave"):
-		level_node.call("start_next_wave")
-	else: printerr("SceneLoader: Cannot start next wave.")
+	# Decide next step based on the COMPLETED wave index passed in
+	var boss_num = 0
+	if completed_wave_index == 3: boss_num = 1 # Boss after Wave 4 upgrade
+	elif completed_wave_index == 7: boss_num = 2 # Boss after Wave 8 upgrade
+	# No check for 11, win condition handled in _on_upgrades_ready
+
+	if boss_num > 0:
+		if level_node and level_node.has_method("start_boss_fight"):
+			level_node.start_boss_fight(boss_num)
+		# Don't start next wave yet, wait for boss defeat
+	else:
+		if level_node and level_node.has_method("start_next_wave"):
+			level_node.start_next_wave() # This function should handle spawning AND countdown start
+		else:
+			printerr("SceneLoader: Cannot start next wave (level node or start_next_wave method missing).")
 
 
 # --- Function to handle post-boss logic ---
 # Called by Level after boss placeholder is "defeated"
 func post_boss_victory(boss_num: int):
-	print("SceneLoader: Post Boss %d Logic." % boss_num)
 	GlobalState.unlock_next_slots(boss_num) # Unlock Slots
 	var player = get_tree().get_first_node_in_group("players")
 	if player and player.has_method("advance_stage"): player.advance_stage() # Advance Player Stage
 
-	if boss_num >= 3: # Check for Game Win
+	if boss_num >= 3: # Check for Game Win (Assuming 3 bosses total)
 		var level_node = get_tree().current_scene
 		if level_node and level_node.has_method("game_over"):
 			level_node.game_over("YOU WIN!") # Trigger win screen
@@ -367,14 +403,19 @@ func post_boss_victory(boss_num: int):
 			var slot_manager = level_node.get_node_or_null("SlotManager")
 			if slot_manager: slot_manager.reset_slot_stats()
 			GlobalState.reset_enemies_destroyed()
+
+			# Clean up bullets before repositioning player
+			if level_node.has_method("cleanup_active_bullets"):
+				level_node.cleanup_active_bullets()
+
 			if player: player.global_position = Vector2(600, 400) # Reset player pos
-			# Start next wave via countdown
-			if level_node.has_method("start_level_countdown"):
-				level_node.start_level_countdown()
-			else: # Fallback if countdown missing
-				level_node.call("start_next_wave")
+
+			# Call start_next_wave, which handles spawning and countdown
+			level_node.start_next_wave()
+		# --- END CORRECTION ---
 		else:
 			printerr("SceneLoader: Cannot start next wave after boss %d." % boss_num)
+
 # Called by Level script during game over / win sequence
 func print_final_slot_stats():
 	var level_node = get_tree().current_scene

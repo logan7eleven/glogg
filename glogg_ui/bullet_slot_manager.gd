@@ -4,7 +4,7 @@ extends Node
 signal slots_initialized(num_slots: int)
 
 class SlotStats:
-	var damage: int = 0
+	var damage: float = 0.0
 	var kills: int = 0
 	var hits: int = 0
 	func reset(): damage = 0; kills = 0; hits = 0
@@ -32,7 +32,7 @@ func get_next_slot() -> int:
 	current_slot = (current_slot + 1) % slots.size()
 	return slot
 
-func record_damage(slot_index: int, damage_amount: int = 1):
+func record_damage(slot_index: int, damage_amount: float = 1.0):
 	if slot_index >= 0 and slot_index < slots.size():
 		slots[slot_index].damage += damage_amount
 		slots[slot_index].hits += 1

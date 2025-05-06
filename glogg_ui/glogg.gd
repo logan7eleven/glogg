@@ -106,7 +106,7 @@ func advance_stage():
 	current_stage = min(current_stage + 1, 3) # Max 3 stages for fire rate
 	current_fire_rate = fire_rates[current_stage]
 	time_since_last_fire = 0.0
-	print("Glogg: Advanced to Stage %d - Fire Rate: %.3f shots/sec" % [current_stage, 1.0/current_fire_rate])
+	print("Advanced to Stage %d - Slots increased to %.f" % [current_stage, 1.0/current_fire_rate])
 
 func try_fire(aim_angle: float):
 	var level = get_parent()

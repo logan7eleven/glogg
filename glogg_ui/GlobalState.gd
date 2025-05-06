@@ -33,7 +33,7 @@ func apply_slot_upgrade(slot_index: int, chosen_resource: StatusEffectData):
 	if current_resource == chosen_resource:
 		# Level up existing effect - NO MAX LEVEL CHECK HERE
 		current_data["level"] += 1
-		print("GlobalState: Levelled up '%s' on slot %d to level %d" % [chosen_resource.effect_id, slot_index, current_data["level"]])
+		print("Levelled up '%s' on slot %d to level %d" % [chosen_resource.effect_id, slot_index, current_data["level"]])
 	else:
 		# Overwrite with new effect at level 1
 		current_data["resource"] = chosen_resource

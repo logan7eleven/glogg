@@ -18,12 +18,17 @@ func initialize(data: StatusEffectData, target: EnemyBase, effect_level: int, sl
 	self.name = data.effect_id
 	if not _on_apply(): queue_free()
 
-func increment_and_update_level():
+func increment_and_update_level(triggering_slot_index: int):
 	var new_level = level + 1
 	var old_level = level
 	level = new_level
-	print("Stacked effect '%s' on %s to Lvl %d" % [name, target_enemy.enemy_id, level])
-	_on_level_change(old_level)
+	# Get the descriptive ID string (e.g., "Crawler 5")
+	var id_str = target_enemy._get_log_id_str()
+	# Determine source string based on the triggering slot index
+	var source_str = "Slot %d" % triggering_slot_index if triggering_slot_index >= 0 else "Unknown Source"
+	# Use the new format
+	print("%s %s increased to level %d by %s" % [id_str, effect_data.display_name, level, source_str])
+	_on_level_change(old_level) # Call level change hook AFTER level is updated
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE: _on_remove()

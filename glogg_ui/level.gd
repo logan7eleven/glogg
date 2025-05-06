@@ -1,4 +1,4 @@
-# level.gd (Countdown, Boss Placeholder, Win State - Cleaned)
+# level.gd (Countdown, Boss Placeholder, Win State - Cleaned & Updated Spawn/Movement)
 extends Node2D
 
 # --- Node References ---
@@ -11,8 +11,9 @@ extends Node2D
 # --- Wave Management ---
 var current_wave: int = 0 # 0-indexed
 var base_enemy_count = 4
-var v1_crawler_positions: Array[Vector2] = []
-var next_crawler_id: int = 0
+var next_enemy_id: int = 1
+var next_crawler_id: int = 1
+var next_scooter_id: int = 1 # Keep for future use
 
 # --- Game State ---
 var game_is_over: bool = false # Covers both win and loss
@@ -21,9 +22,11 @@ var is_boss_fight: bool = false
 var current_boss_num: int = 0
 var boss_placeholder: Area2D = null # Placeholder for boss target
 var countdown_value: int = 3
+var player_spawn_position: Vector2 = Vector2(600, 400) # Store player spawn pos
 
 # --- Scene Preloads ---
 const CRAWLER_SCENE = preload("res://crawler.tscn") # Ensure extends EnemyBase
+# const SCOOTER_SCENE = preload("res://scooter.tscn") # Keep commented out for now
 const PLAYER_SCENE = preload("res://glogg.tscn")
 
 # --- Engine Methods ---
@@ -38,17 +41,14 @@ func _ready():
 	if not countdown_timer.is_connected("timeout", Callable(self, "_on_countdown_tick")):
 		countdown_timer.connect("timeout", Callable(self, "_on_countdown_tick"))
 
-	# Define fixed spawn positions
-	var viewport_size = get_viewport_rect().size
-	v1_crawler_positions = [ Vector2(100, 100), Vector2(viewport_size.x - 100, 100), Vector2(100, viewport_size.y - 100), Vector2(viewport_size.x - 100, viewport_size.y - 100) ]
-
 	spawn_player()
 
 	# Connect signals
 	if not slot_manager.is_connected("slots_initialized", Callable(GlobalState, "initialize_slot_upgrades")):
 		slot_manager.connect("slots_initialized", Callable(GlobalState, "initialize_slot_upgrades"))
 
-	start_level_countdown()
+	# Start the first wave setup immediately (spawns enemies, then starts countdown)
+	start_next_wave()
 
 
 func _configure_center_label(label: Label):
@@ -63,6 +63,8 @@ func start_level_countdown():
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if player: # Simple null check
 		player.can_move = false # Disable player movement
+
+	# Enemies are already spawned but have can_move = false in EnemyBase
 
 	countdown_value = 3
 	_show_countdown_value()
@@ -80,106 +82,168 @@ func _on_countdown_tick():
 func _show_countdown_value():
 	game_over_label.text = str(countdown_value) if countdown_value > 0 else "GO!"
 	game_over_label.show()
-	await get_tree().create_timer(0.25).timeout
-	game_over_label.hide()
+	# Use a short timer for the "GO!" message visibility
+	if countdown_value <= 0:
+		await get_tree().create_timer(0.5).timeout # Show "GO!" for half a second
+		game_over_label.hide() # Hide after the short delay
 
 
 func _start_wave_actual():
+	print("Starting Wave %d" % current_wave)
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if player: # Simple null check
-		player.can_move = true # Enable player movement
+		player.can_move = true
 
-	start_next_wave()
+	# Enable enemy movement by setting the flag on all enemies in the group
+	for enemy in get_tree().get_nodes_in_group("enemies_physics"):
+		if enemy is EnemyBase: # Type check for safety
+			enemy.can_move = true
+
+	# Wave logic already started in start_next_wave
 
 
 func spawn_player():
 	var player = PLAYER_SCENE.instantiate() as Area2D
 	player.slot_manager = slot_manager # Direct assignment
-	player.position = Vector2(600, 400)
+	player.position = player_spawn_position # Use stored variable
 	add_child(player)
 
 
 func start_next_wave():
 	if game_is_over or is_boss_fight: return
-	cleanup_wave_entities()
+	cleanup_wave_entities() # Clear previous wave enemies first
+	
+	next_enemy_id = 1
+	next_crawler_id = 1
+	next_scooter_id = 1 
+
 	var num_enemies = base_enemy_count + current_wave
 	GlobalState.set_next_wave_threshold(num_enemies)
 	GlobalState.reset_enemies_destroyed()
-	spawn_enemies(num_enemies, current_wave == 0)
+
+	# Spawn enemies for the upcoming wave
+	spawn_enemies(num_enemies)
+
 	current_wave += 1
+
+	# Start the countdown which will enable movement later
+	start_level_countdown()
 
 
 func get_current_wave() -> int: return current_wave
 
 
-func spawn_enemies(count: int, use_fixed_positions: bool):
+func spawn_enemies(count: int):
+	# Currently only spawning crawlers
 	var scene_to_spawn = CRAWLER_SCENE
 	for i in range(count):
-		var enemy_instance = scene_to_spawn.instantiate() # Instantiate first
-		# --- CORRECTED CHECK ---
-		if not enemy_instance is EnemyBase: # Check if it inherits correctly
-			if enemy_instance.has_method("apply_status_effect"): # Fallback check
-				pass # Assume okay if methods exist
-			else:
-				printerr("Spawn Error: Instanced scene does not extend EnemyBase or have required methods!")
-				enemy_instance.queue_free() # Clean up invalid instance
-				continue # Skip to next enemy
-		# --- END CORRECTION ---
+		# If adding more enemy types, add logic here to choose scene_to_spawn
+		# scene_to_spawn = CRAWLER_SCENE if i % 2 == 0 else SCOOTER_SCENE
 
-		# Assign Type-Specific ID
-		# Use 'in' check which is safer for script variables
-		if "crawler_id" in enemy_instance: enemy_instance.crawler_id = next_crawler_id; next_crawler_id += 1
-		# elif "scooter_id" in enemy_instance: enemy_instance.scooter_id = next_scooter_id; next_scooter_id += 1
+		var enemy_instance = scene_to_spawn.instantiate()
 
-		# Set position
-		if use_fixed_positions and i < v1_crawler_positions.size(): enemy_instance.position = v1_crawler_positions[i]
-		else: enemy_instance.position = _get_random_border_position()
+		# Check if it inherits correctly from EnemyBase
+		if not enemy_instance is EnemyBase:
+			printerr("Spawn Error: Instanced scene '%s' does not extend EnemyBase!" % scene_to_spawn.resource_path)
+			enemy_instance.queue_free()
+			continue
 
-		# Connect signals
+		# Assign IDs
+		enemy_instance.enemy_id = next_enemy_id
+		next_enemy_id += 1
+		if enemy_instance is Crawler: # Check specific type if needed
+			enemy_instance.crawler_id = next_crawler_id
+			next_crawler_id += 1
+		# Add elif for other types like scooter when ready
+		# elif enemy_instance is Scooter:
+		# 	enemy_instance.scooter_id = next_scooter_id
+		# 	next_scooter_id += 1
+
+		# Set position using the new random logic
+		enemy_instance.position = _get_random_spawn_position()
+
+		# Connect signals (already checked it's EnemyBase)
 		if not enemy_instance.is_connected("damaged", Callable(slot_manager, "record_damage")):
 			enemy_instance.connect("damaged", Callable(slot_manager, "record_damage"))
 		if not enemy_instance.is_connected("killed", Callable(slot_manager, "record_kill")):
 			enemy_instance.connect("killed", Callable(slot_manager, "record_kill"))
 
+		# Add to scene (enemies start with can_move = false by default in EnemyBase)
 		add_child(enemy_instance)
 
-func _get_random_border_position() -> Vector2:
+
+# RENAMED and MODIFIED function for random spawn away from player start
+func _get_random_spawn_position() -> Vector2:
 	var viewport_rect = get_viewport_rect()
-	var margin = 50.0; var spawn_pos = Vector2.ZERO; var side = randi() % 4
-	match side:
-		0: spawn_pos = Vector2(randf_range(margin, viewport_rect.size.x - margin), margin)
-		1: spawn_pos = Vector2(randf_range(margin, viewport_rect.size.x - margin), viewport_rect.size.y - margin)
-		2: spawn_pos = Vector2(margin, randf_range(margin, viewport_rect.size.y - margin))
-		3: spawn_pos = Vector2(viewport_rect.size.x - margin, randf_range(margin, viewport_rect.size.y - margin))
-	return spawn_pos
+	var margin = 50.0 # Keep a small margin from edge
+	var min_distance_from_player = 300.0
+	var spawn_pos = Vector2.ZERO
+	var attempts = 0
+	var max_attempts = 50 # Safety break
+
+	while attempts < max_attempts:
+		attempts += 1
+		spawn_pos.x = randf_range(margin, viewport_rect.size.x - margin)
+		spawn_pos.y = randf_range(margin, viewport_rect.size.y - margin)
+
+		if spawn_pos.distance_to(player_spawn_position) >= min_distance_from_player:
+			return spawn_pos # Found a valid position
+
+	printerr("Level: Could not find valid spawn position after %d attempts. Using last attempt." % max_attempts)
+	return spawn_pos # Return last generated position if loop fails
 
 
 func cleanup_wave_entities():
-	get_tree().call_group("enemies", "queue_free") # Removes nodes in "enemies" group
+	# Use the group added in EnemyBase._ready() to remove enemies
+	get_tree().call_group("enemies_physics", "queue_free")
+	# Bullet cleanup is now handled separately by cleanup_active_bullets
+
+
+# ADDED: Specific function for bullet cleanup called by SceneLoader/Level
+func cleanup_active_bullets():
 	# Deactivate bullets currently active in the Level scene
-	var children_to_check = get_children()
-	for child in children_to_check:
+	# Check children of the Level node itself
+	for child in get_children():
+		# Check group AND visibility to only affect active bullets
 		if child.is_in_group("bullets") and child.visible:
-			child.deactivate() # Assume deactivate exists and works
+			if child.has_method("deactivate"):
+				child.deactivate()
+			else:
+				printerr("Level: Bullet node missing deactivate method!")
+				child.queue_free() # Fallback
 
 
 func cleanup_all_entities():
-	cleanup_wave_entities()
+	cleanup_wave_entities() # Removes enemies
+	cleanup_active_bullets() # Removes active bullets
 	var player = get_tree().get_first_node_in_group("players")
-	if player: player.queue_free() # Simple null check
+	if player: player.queue_free()
 	if boss_placeholder: boss_placeholder.queue_free(); boss_placeholder = null
 
 
 func start_boss_fight(boss_num: int):
 	if game_is_over: return
 	is_boss_fight = true; current_boss_num = boss_num
-	cleanup_wave_entities()
-	
+	cleanup_wave_entities() # Clear regular enemies
+	cleanup_active_bullets() # Clear bullets
+
 	# Display Boss Text
 	game_over_label.text = "BOSS!"; game_over_label.show()
 	# Ensure player can move
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if player: player.can_move = true
+
+	# --- BOSS SPAWN LOGIC (Placeholder) ---
+	boss_placeholder = Area2D.new()
+	boss_placeholder.add_to_group("boss_target") # Group for bullet collision
+	var shape = CollisionShape2D.new()
+	shape.shape = CircleShape2D.new()
+	shape.shape.radius = 50
+	boss_placeholder.add_child(shape)
+	boss_placeholder.position = Vector2(get_viewport_rect().size.x / 2, 150) # Example position
+	add_child(boss_placeholder)
+	# --- END BOSS SPAWN ---
+
 
 func game_over(message: String = "GAME OVER"):
 	if game_is_over: return
@@ -195,9 +259,10 @@ func game_over(message: String = "GAME OVER"):
 	process_mode = Node.PROCESS_MODE_ALWAYS # Allow input
 	if not get_tree().paused: SceneLoader.pause_game()
 
+
 func boss_hit():
 	if not is_boss_fight: return
-	print("Level: Boss %d Placeholder Hit/Skipped! Proceeding..." % current_boss_num)
+	print("Boss %d Placeholder Hit! Next Stage..." % current_boss_num)
 	is_boss_fight = false # Clear flag
 
 	# Clean up placeholder and text
@@ -212,10 +277,13 @@ func boss_hit():
 
 
 func _unhandled_input(event):
+	# Allow skipping boss via accept button (for testing)
 	if is_boss_fight and not game_is_over and event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled() # Consume the input
 		boss_hit() # Call the same function as shooting the boss
 		return # Stop further input processing for this event
+
+	# Handle return to menu on game over/win
 	if game_is_over and event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled() # Handle input first
 		process_mode = original_process_mode

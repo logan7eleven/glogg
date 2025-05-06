@@ -1,5 +1,6 @@
 # crawler.gd (Defines own base stats, extends path, calls super)
 extends "res://EnemyBase.gd" # Extend using path
+class_name Crawler
 
 # --- Crawler Specific Base Stats ---
 @export var base_health: float = 3.0
@@ -80,14 +81,12 @@ func _perform_movement(delta: float, speed_multiplier_from_base: float):
 
 	# Perform collision and movement
 	var collision_info = move_and_collide(global_movement)
-
-	handle_physics_collision(collision_info)
 	
 	if collision_info and apply_collision_damage and collision_damage_amount > 0:
 		var collider = collision_info.get_collider()
 		if collider is EnemyBase and collider != self:
-			# print("[Crawler %d Spikes] Hit Crawler %d! Dealing %.2f damage." % [crawler_id, collider.crawler_id, collision_damage_amount])
-			collider.take_damage(collision_damage_amount, -1) # Apply OUR damage to the one hit
+			var source_str = "%s spikes" % self._get_log_id_str()
+			collider.take_damage(collision_damage_amount, -1, source_str)
 
 	# Handle bouncing based on the collision result
 	if collision_info and collision_cooldown <= 0:
@@ -102,7 +101,3 @@ func _perform_movement(delta: float, speed_multiplier_from_base: float):
 	# Reset t cycle correctly
 	if t >= 2 * PI:
 		t = fmod(t, 2 * PI) # Use fmod for smooth wrap-around
-
-# --- Override take_damage for specific logging ---
-func take_damage(amount: float, slot_index: int):
-	super(amount, slot_index) # Pass arguments to super
