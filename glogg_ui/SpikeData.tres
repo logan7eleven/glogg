@@ -6,7 +6,6 @@
 script = ExtResource("1_rrmvj")
 effect_id = "spikes"
 display_name = "Spikes"
-description_template = "Enemies colliding take {damage_mult:.0f}% (+{level_bonus:.0f}% per Lvl) base damage."
 values_per_level = [{
 "damage_mult": 0.25,
 "level_bonus_damage": 0.1

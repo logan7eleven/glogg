@@ -6,7 +6,6 @@
 script = ExtResource("1_myucg")
 effect_id = "slow"
 display_name = "Slow"
-description_template = "Decreases speed by 50% for {base_duration:.1f}s (+{level_bonus_duration:.1f}s per Lvl)."
 values_per_level = [{
 "base_duration": 3.0,
 "level_bonus_duration": "1.0"

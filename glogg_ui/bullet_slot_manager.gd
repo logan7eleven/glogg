@@ -1,4 +1,3 @@
-# bullet_slot_manager.gd (Added Hit Tracking - Cleaned)
 extends Node
 
 signal slots_initialized(num_slots: int)

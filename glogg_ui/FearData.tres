@@ -6,7 +6,6 @@
 script = ExtResource("1_sygs8")
 effect_id = "fear"
 display_name = "Fear"
-description_template = "Freezes enemy for {freeze_duration:.1f}s (+{duration_bonus:.1f}s per Lvl) when player is near (<100px)."
 values_per_level = [{
 "base_duration": 0.0,
 "freeze_duration": 1.0,

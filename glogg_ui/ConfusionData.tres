@@ -6,7 +6,6 @@
 script = ExtResource("1_hq1om")
 effect_id = "confusion"
 display_name = "Confusion"
-description_template = "{chance:.0f}% (+{level_bonus:.0f}% per Lvl) chance to target random angle on orientation check."
 values_per_level = [{
 "base_duration": 1.0,
 "level_bonus_duration": 0.5

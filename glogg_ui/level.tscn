@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://b7413gglttkr3"]
+[gd_scene load_steps=10 format=3 uid="uid://b2ej762qgdvwf"]
 
-[ext_resource type="Script" uid="uid://cvpjjyl8sbjef" path="res://level.gd" id="1_8niqe"]
+[ext_resource type="Script" uid="uid://b7kignwoqjrl2" path="res://level.gd" id="1_1ainy"]
 [ext_resource type="Script" uid="uid://ch05bgwr18cx6" path="res://bullet_pool.gd" id="2_1gagn"]
 [ext_resource type="PackedScene" uid="uid://cea82s1gm355y" path="res://bullet.tscn" id="3_8g7xs"]
-[ext_resource type="Texture2D" uid="uid://fuidd5ftndwu" path="res://background.png" id="4_0b4ue"]
+[ext_resource type="Texture2D" uid="uid://dsdstenj47umr" path="res://background2.png" id="4_1ainy"]
 [ext_resource type="PackedScene" uid="uid://hua8kq4frfmk" path="res://bullet_slot_manager.tscn" id="5_f2txt"]
+[ext_resource type="Script" uid="uid://jmfkr1rp5ppb" path="res://PlayerCamera.gd" id="6_1ainy"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0b4ue"]
 friction = 0.0
@@ -16,7 +17,7 @@ size = Vector2(120, 920)
 size = Vector2(1320, 120)
 
 [node name="level" type="Node2D"]
-script = ExtResource("1_8niqe")
+script = ExtResource("1_1ainy")
 
 [node name="bounds" type="StaticBody2D" parent="." groups=["bounds"]]
 collision_layer = 8
@@ -45,7 +46,7 @@ bullet_scene = ExtResource("3_8g7xs")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(600, 400)
-texture = ExtResource("4_0b4ue")
+texture = ExtResource("4_1ainy")
 
 [node name="GameOverLabel" type="Label" parent="."]
 process_mode = 3
@@ -97,3 +98,6 @@ position = Vector2(600, 860)
 shape = SubResource("RectangleShape2D_2")
 
 [node name="CountdownTimer" type="Timer" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("6_1ainy")
