@@ -31,19 +31,15 @@ func _handle_upgrades_ready_deferred():
 
 func _on_upgrades_ready() -> void:
 	var level_node = get_tree().current_scene
-	if not is_instance_valid(level_node) or not level_node.has_method("get_current_wave"): return
-	if level_node.game_is_over: return
+	if level_node.game_is_over: 
+		return
 	var completed_wave_index = level_node.get_current_wave() - 1
 	print("Completed Wave %d" % (completed_wave_index + 1)) 
 	if completed_wave_index >= 11:
 		print("Wave 12 Completed - Triggering WIN!")
-		if level_node.has_method("game_over"):
-			level_node.game_over("YOU WIN!") 
+		level_node.game_over("YOU WIN!") 
 		return
-	var is_boss_trigger_wave = false
-	if completed_wave_index == 3 or completed_wave_index == 7:
-		is_boss_trigger_wave = true
-	var slot_manager = level_node.get_node_or_null("SlotManager")
+	var slot_manager = level_node.get_node("SlotManager")
 	print("\n--- Slot Stats for Completed Wave ---")
 	var num_slots = GlobalState.unlocked_slots 
 	for i in range(num_slots):
@@ -58,7 +54,7 @@ func _on_upgrades_ready() -> void:
 	upgrade_ui_instance = upgrade_ui_scene.instantiate()
 	get_tree().root.add_child(upgrade_ui_instance)
 	upgrade_ui_instance.process_mode = Node.PROCESS_MODE_ALWAYS 
-	var vbox = upgrade_ui_instance.get_node_or_null("Panel/VBoxContainer")
+	var vbox = upgrade_ui_instance.get_node("Panel/VBoxContainer")
 	var buttons = [vbox.get_child(0), vbox.get_child(1), vbox.get_child(2)]
 	for i in range(buttons.size()):
 		buttons[i].visible = true
@@ -217,7 +213,7 @@ func _on_upgrade_button_pressed(button_index: int, completed_wave_index: int) ->
 	else:
 		print("Overwrote '%s' on slot %d, added '%s'" % [current_resource.display_name, target_slot_index, chosen_resource.display_name])
 	GlobalState.reset_enemies_destroyed()
-	var slot_manager = level_node.get_node_or_null("SlotManager") if level_node else null
+	var slot_manager = level_node.get_node("SlotManager") if level_node else null
 	if slot_manager: slot_manager.reset_slot_stats()
 	if upgrade_ui_instance: upgrade_ui_instance.queue_free(); upgrade_ui_instance = null
 	resume_game()
@@ -242,7 +238,7 @@ func post_boss_victory(boss_num: int):
 	else:
 		var level_node = get_tree().current_scene
 		if level_node and level_node.has_method("start_next_wave"):
-			var slot_manager = level_node.get_node_or_null("SlotManager")
+			var slot_manager = level_node.get_node("SlotManager")
 			slot_manager.reset_slot_stats()
 			GlobalState.reset_enemies_destroyed()
 			level_node.cleanup_active_bullets()
@@ -251,7 +247,7 @@ func post_boss_victory(boss_num: int):
 
 func print_final_slot_stats():
 	var level_node = get_tree().current_scene
-	var slot_manager = level_node.get_node_or_null("SlotManager") if is_instance_valid(level_node) else null
+	var slot_manager = level_node.get_node("SlotManager") if is_instance_valid(level_node) else null
 	print("\n--- FINAL SLOT STATS ---")
 	var num_slots = GlobalState.unlocked_slots
 	for i in range(num_slots):

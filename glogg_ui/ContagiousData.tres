@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://b64sekpiqs2m7"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_6svqs"]
+
+[resource]
+script = ExtResource("1_6svqs")
+effect_id = "unknown"
+display_name = "Unknown Effect"
+values_per_level = []
+active_effect_script_path = ""
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

@@ -15,8 +15,4 @@ func get_calculated_value(level: int, base_key: String, bonus_key: String, defau
 	var base_value = data_dict.get(base_key, default_base)
 	var level_bonus = data_dict.get(bonus_key, 0.0)
 	var effective_level = level
-	if typeof(base_value) == TYPE_FLOAT or typeof(level_bonus) == TYPE_FLOAT:
-		return float(base_value) + (float(level_bonus) * (effective_level - 1))
-	elif typeof(base_value) == TYPE_INT and typeof(level_bonus) == TYPE_INT:
-		return int(base_value) + (int(level_bonus) * (effective_level - 1))
-	else: return base_value
+	return base_value + (level_bonus * (effective_level - 1))

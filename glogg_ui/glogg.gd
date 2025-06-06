@@ -14,7 +14,6 @@ var min_pos: Vector2
 var max_pos: Vector2
 var aim_direction = Vector2.ZERO
 var target_angle = 0.0
-var fire_queued = false
 var cockpit_target_angle = 0.0
 var movement_queued = false
 var rotation_speed = 50.0
@@ -22,6 +21,7 @@ var slot_manager: Node
 var can_move: bool = false
 
 const ROTATION_TOLERANCE = 0.03
+const ANGLE_INCREMENT = PI / 12.0
 
 func _ready():
 	GlobalState.connect("slots_unlocked", Callable(self, "_on_slots_unlocked"))
@@ -36,7 +36,6 @@ func _ready():
 	current_fire_rate = fire_rates[current_stage]
 	slot_manager.initialize_slots(GlobalState.unlocked_slots)
 
-
 func _on_slots_unlocked(new_slot_count: int):
 	slot_manager.initialize_slots(new_slot_count)
 
@@ -45,11 +44,9 @@ func _process(delta):
 	var aim_x = Input.get_axis("aimL", "aimR")
 	var aim_y = Input.get_axis("aimU", "aimD")
 	aim_direction = Vector2(aim_x, aim_y)
-	if aim_direction != Vector2.ZERO and not fire_queued:
-		time_since_last_fire += delta
-		if time_since_last_fire >= current_fire_rate:
-			fire_queued = true
-			target_angle = round(aim_direction.angle() / (PI / 12)) * (PI / 12)
+	if aim_direction != Vector2.ZERO:
+		target_angle = round(aim_direction.angle() / ANGLE_INCREMENT) * ANGLE_INCREMENT
+	time_since_last_fire += delta
 
 func _physics_process(delta):
 	if not can_move: return 
@@ -69,12 +66,13 @@ func _physics_process(delta):
 		cockpit.rotation = lerp_angle(cockpit.rotation, cockpit_target_angle, rotation_speed * delta)
 		if abs(wrapf(cockpit_target_angle - cockpit.rotation, -PI, PI)) <= ROTATION_TOLERANCE:
 			movement_queued = false
-	if aim_direction != Vector2.ZERO or fire_queued:
+	if aim_direction != Vector2.ZERO:
 		cannon.rotation = lerp_angle(cannon.rotation, target_angle, rotation_speed * delta)
-		if fire_queued and abs(wrapf(target_angle - cannon.rotation, -PI, PI)) <= ROTATION_TOLERANCE:
-			try_fire(target_angle)
+	if time_since_last_fire >= current_fire_rate:
+		if aim_direction != Vector2.ZERO:
+			var fire_angle = round(cannon.rotation / ANGLE_INCREMENT) * ANGLE_INCREMENT
+			try_fire(fire_angle)
 			time_since_last_fire = 0.0
-			fire_queued = false
 
 func advance_stage():
 	current_stage = current_stage + 1
@@ -86,6 +84,5 @@ func try_fire(aim_angle: float):
 	var level = get_parent()
 	var bullet_pool = level.get_node("BulletPool")
 	var bullet = bullet_pool.get_bullet()
-	if bullet:
-		var current_slot_index = slot_manager.get_next_slot()
-		bullet.fire(gun.global_position, aim_angle, current_slot_index)
+	var current_slot_index = slot_manager.get_next_slot()
+	bullet.fire(gun.global_position, aim_angle, current_slot_index)

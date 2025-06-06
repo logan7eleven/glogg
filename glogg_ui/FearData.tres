@@ -8,9 +8,9 @@ effect_id = "fear"
 display_name = "Fear"
 values_per_level = [{
 "base_duration": 0.0,
-"freeze_duration": 1.0,
+"fear_duration": 0.0,
 "level_bonus_duration": 0.0,
-"level_bonus_freeze": 0.5
+"level_bonus_fear": 0.0
 }]
 active_effect_script_path = "res://ActiveFearEffect.gd"
 metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

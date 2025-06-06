@@ -32,7 +32,7 @@ func apply_slot_upgrade(slot_index: int, chosen_resource: StatusEffectData):
 		current_data["level"] = 1
 
 func get_slot_upgrade_data(slot_index: int) -> Dictionary:
-	return slot_upgrade_data.get(slot_index, {"resource": null, "level": 0})
+	return slot_upgrade_data[slot_index]
 
 func unlock_next_slots(boss_level: int):
 	var slots_to_add = 0

@@ -30,7 +30,6 @@ func _notification(what):
 
 # --- Virtual Methods ---
 func _on_apply(): 
-	return true
 	pass
 func _on_level_change(_old_level: int): 
 	pass

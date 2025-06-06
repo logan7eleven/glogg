@@ -58,11 +58,6 @@ func _on_area_entered(area: Area2D):
 	if area.is_in_group("bounds"):
 		deactivate()
 		return
-	if area.is_in_group("boss_target"):
-		var level = get_parent()
-		level.boss_hit()
-		deactivate()
-		return
 	if area.is_in_group("enemies"):
 		if slot_index == -1: 
 			deactivate()

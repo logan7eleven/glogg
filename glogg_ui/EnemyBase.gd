@@ -18,8 +18,8 @@ var collision_damage_amount: float = 0.0
 var enemy_id: int = -1
 var player: Node2D 
 var can_move: bool = false 
-var hit_freeze_timer: Timer
-var is_hit_frozen: bool = false
+var hitstop_timer: Timer
+var is_hitstop: bool = false
 
 const HIT_FREEZE_DURATION = 0.04
 const HIT_FREEZE_INHIBITOR_KEY = "global_hit_freeze" 
@@ -43,18 +43,18 @@ func _ready():
 	add_to_group("enemies_physics")
 	_setup_hitbox()
 	call_deferred("_find_player")
-	hit_freeze_timer = Timer.new()
-	hit_freeze_timer.one_shot = true
-	hit_freeze_timer.wait_time = HIT_FREEZE_DURATION
-	hit_freeze_timer.timeout.connect(_on_hit_freeze_timer_timeout)
-	add_child(hit_freeze_timer)
+	hitstop_timer = Timer.new()
+	hitstop_timer.one_shot = true
+	hitstop_timer.wait_time = HIT_FREEZE_DURATION
+	hitstop_timer.timeout.connect(_on_hit_freeze_timer_timeout)
+	add_child(hitstop_timer)
 
 func _find_player():
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("players")
 
 func _setup_hitbox():
-	var hitbox = get_node_or_null("HitBox")
+	var hitbox = get_node("HitBox")
 	hitbox.add_to_group("enemies")
 	hitbox.monitorable = true
 	hitbox.connect("area_entered", Callable(self, "_on_hitbox_area_entered"))
@@ -62,7 +62,7 @@ func _setup_hitbox():
 func _physics_process(delta):
 	if not can_move:
 		return
-	if is_hit_frozen:
+	if is_hitstop:
 		return
 	# --- Orientation ---
 	var final_can_orient = orientation_inhibitors.is_empty()
@@ -87,7 +87,6 @@ func _perform_movement(_delta: float, _speed_multiplier: float): pass # Implemen
 func take_damage(amount: float, slot_index: int, source_description: String = ""):
 	if health <= 0: 
 		return
-	_apply_hit_freeze()
 	var final_damage_taken_multiplier = 1.0
 	for effect_id in damage_taken_multipliers:
 		final_damage_taken_multiplier *= damage_taken_multipliers[effect_id]
@@ -112,11 +111,10 @@ func take_damage(amount: float, slot_index: int, source_description: String = ""
 		GlobalState.increment_enemies_destroyed()
 
 func apply_status_effect(effect_data_resource: StatusEffectData, _level_from_hit: int, source_slot_index: int):
-	if not is_hit_frozen:
+	if not is_hitstop:
 		_apply_hit_freeze()
 	var effect_id = effect_data_resource.effect_id
-	var script_path = effect_data_resource.active_effect_script_path
-	var existing_effect_node = get_node_or_null(effect_id) as ActiveStatusEffect
+	var existing_effect_node = get_node(effect_id) as ActiveStatusEffect
 	if existing_effect_node:
 		existing_effect_node.increment_and_update_level(source_slot_index)
 	else:
@@ -135,17 +133,15 @@ func handle_physics_collision(collision_info: KinematicCollision2D):
 		take_damage(collider.collision_damage_amount, -1, source_str)
 
 func _apply_hit_freeze():
-	is_hit_frozen = true
+	is_hitstop = true
 	movement_inhibitors[HIT_FREEZE_INHIBITOR_KEY] = true
 	orientation_inhibitors[HIT_FREEZE_INHIBITOR_KEY] = true
-	hit_freeze_timer.start()
+	hitstop_timer.start()
 
 func _on_hit_freeze_timer_timeout():
-	is_hit_frozen = false
-	if movement_inhibitors.has(HIT_FREEZE_INHIBITOR_KEY):
-		movement_inhibitors.erase(HIT_FREEZE_INHIBITOR_KEY)
-	if orientation_inhibitors.has(HIT_FREEZE_INHIBITOR_KEY):
-		orientation_inhibitors.erase(HIT_FREEZE_INHIBITOR_KEY)
+	is_hitstop = false
+	movement_inhibitors.erase(HIT_FREEZE_INHIBITOR_KEY)
+	orientation_inhibitors.erase(HIT_FREEZE_INHIBITOR_KEY)
 
 func _on_body_entered_base(body: Node): 
 	if apply_collision_damage and body is EnemyBase and body != self:
