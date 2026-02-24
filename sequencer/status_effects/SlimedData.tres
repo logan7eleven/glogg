@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://ch77g40de2284"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_7q7fr"]
+
+[resource]
+script = ExtResource("1_7q7fr")
+effect_id = "slimed"
+display_name = "Slimed"
+values_per_level = [{
+"base_trail_duration": 0.5,
+"level_bonus_duration": 0.15,
+"max_path_points": 50.0,
+"path_point_distance": 10.0,
+"trail_damage_interval": 0.25,
+"trail_damage_per_tick": 0.5,
+"trail_width": 20.0
+}]
+active_effect_script_path = "res://ActiveSlimedEffect.gd"
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"
