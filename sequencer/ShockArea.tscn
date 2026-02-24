@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://c6r6v8g73xc8u"]
+
+[ext_resource type="Script" uid="uid://cy60jybb02tde" path="res://shock_area.gd" id="1_vx13u"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ud03t"]
+
+[node name="ShockArea" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+monitoring = false
+monitorable = false
+script = ExtResource("1_vx13u")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ud03t")
+
+[node name="VisualPulse" type="Polygon2D" parent="."]
+color = Color(0.611633, 0.611635, 0, 0.619608)
+
+[node name="ActiveDurationTimer" type="Timer" parent="."]
+one_shot = true

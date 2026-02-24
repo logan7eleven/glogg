@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BlockData" load_steps=3 format=3 uid="uid://c413whcgjh18s"]
+
+[ext_resource type="Script" uid="uid://bwggburfb6fsj" path="res://planning_phase/EffectData.gd" id="1_y30j0"]
+[ext_resource type="Script" uid="uid://cwolyfgqvolfb" path="res://planning_phase/BlockData.gd" id="2_lw5hy"]
+
+[resource]
+script = ExtResource("2_lw5hy")
+height = 6
+color = Color(0.14509805, 0.25490198, 1, 1)
+h1_w1 = true
+h2_w1 = true
+h3_w1 = true
+h4_w1 = true
+h5_w1 = true
+h6_w1 = true
+metadata/_custom_type_script = "uid://cwolyfgqvolfb"

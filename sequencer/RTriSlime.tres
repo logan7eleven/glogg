@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="BlockData" load_steps=5 format=3 uid="uid://cukc6srwjfc7j"]
+
+[ext_resource type="Script" uid="uid://bwggburfb6fsj" path="res://planning_phase/EffectData.gd" id="1_5qplr"]
+[ext_resource type="Resource" uid="uid://ch77g40de2284" path="res://status_effects/SlimedData.tres" id="2_w4j5y"]
+[ext_resource type="Script" uid="uid://cwolyfgqvolfb" path="res://planning_phase/BlockData.gd" id="3_rf8lw"]
+
+[sub_resource type="Resource" id="Resource_p4kaf"]
+script = ExtResource("1_5qplr")
+status_effect = ExtResource("2_w4j5y")
+metadata/_custom_type_script = "uid://bwggburfb6fsj"
+
+[resource]
+script = ExtResource("3_rf8lw")
+shot_type = 1
+effects = Array[ExtResource("1_5qplr")]([SubResource("Resource_p4kaf")])
+width = 3
+display_name = "RTir"
+color = Color(0.27450982, 1, 1, 1)
+h1_w1 = true
+h1_w2 = true
+h1_w3 = true
+h2_w1 = true
+h2_w2 = true
+h2_w3 = true
+h3_w1 = true
+h3_w2 = true
+h3_w3 = true
+h4_w1 = true
+h4_w2 = true
+h4_w3 = false
+h5_w1 = true
+h5_w2 = true
+h5_w3 = false
+h6_w1 = true
+h6_w2 = true
+h6_w3 = false
+h7_w1 = true
+h7_w2 = true
+h7_w3 = false
+h8_w1 = true
+h8_w2 = true
+h8_w3 = false
+h9_w1 = true
+h9_w2 = true
+h9_w3 = false
+h10_w1 = true
+h10_w2 = false
+h10_w3 = false
+h11_w1 = true
+h11_w2 = false
+h11_w3 = false
+h12_w1 = true
+h12_w2 = false
+h12_w3 = false
+metadata/_custom_type_script = "uid://cwolyfgqvolfb"

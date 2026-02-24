@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://hua8kq4frfmk"]
+
+[ext_resource type="Script" uid="uid://bgtfgtj5qtgl5" path="res://bullet_slot_manager.gd" id="1_cp5jt"]
+
+[node name="Node" type="Node"]
+script = ExtResource("1_cp5jt")
