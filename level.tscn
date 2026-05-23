@@ -1,0 +1,135 @@
+[gd_scene load_steps=11 format=3 uid="uid://b2ej762qgdvwf"]
+
+[ext_resource type="Script" uid="uid://bqs2xqf035ihs" path="res://level.gd" id="1_1ainy"]
+[ext_resource type="Script" uid="uid://5t1rdcwkbept" path="res://bullet_pool.gd" id="2_n6hdu"]
+[ext_resource type="Script" uid="uid://baha8vblxahb3" path="res://sequencer/SequencerManager.gd" id="4_0b4ue"]
+[ext_resource type="Texture2D" uid="uid://cbdluse08cdfy" path="res://graphics/background2.png" id="4_1ainy"]
+[ext_resource type="Script" uid="uid://bifodgq2jxg1f" path="res://sequencer/CombatSequencerUI.gd" id="5_1ainy"]
+[ext_resource type="Script" uid="uid://due2cbfsv8dv" path="res://PlayerCamera.gd" id="6_1ainy"]
+[ext_resource type="Script" uid="uid://coo4skduokkpa" path="res://ui/CombatStorageUI.gd" id="6_n6hdu"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0b4ue"]
+friction = 0.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(120, 920)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2"]
+size = Vector2(1320, 120)
+
+[node name="level" type="Node2D"]
+script = ExtResource("1_1ainy")
+
+[node name="bounds" type="StaticBody2D" parent="." groups=["bounds"]]
+collision_layer = 8
+collision_mask = 6
+physics_material_override = SubResource("PhysicsMaterial_0b4ue")
+
+[node name="LeftWall" type="CollisionShape2D" parent="bounds"]
+position = Vector2(-60, 400)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="RightWall" type="CollisionShape2D" parent="bounds"]
+position = Vector2(1260, 400)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="TopWall" type="CollisionShape2D" parent="bounds"]
+position = Vector2(600, -60)
+shape = SubResource("RectangleShape2D_2")
+
+[node name="BottomWall" type="CollisionShape2D" parent="bounds"]
+position = Vector2(600, 860)
+shape = SubResource("RectangleShape2D_2")
+
+[node name="BulletPool" type="Node" parent="."]
+script = ExtResource("2_n6hdu")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(600, 400)
+texture = ExtResource("4_1ainy")
+
+[node name="GameOverLabel" type="Label" parent="."]
+process_mode = 3
+visible = false
+offset_left = 135.0
+offset_top = 180.0
+offset_right = 1074.0
+offset_bottom = 623.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 100
+text = "GAME OVER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameWinLabel" type="Label" parent="."]
+process_mode = 3
+visible = false
+offset_left = 135.0
+offset_top = 180.0
+offset_right = 1074.0
+offset_bottom = 623.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 100
+text = "YOU WIN!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="bounds2" type="Area2D" parent="." groups=["bounds"]]
+position = Vector2(-1, 0)
+collision_layer = 8
+collision_mask = 6
+
+[node name="LeftWall" type="CollisionShape2D" parent="bounds2"]
+position = Vector2(-60, 400)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="RightWall" type="CollisionShape2D" parent="bounds2"]
+position = Vector2(1260, 400)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="TopWall" type="CollisionShape2D" parent="bounds2"]
+position = Vector2(600, -60)
+shape = SubResource("RectangleShape2D_2")
+
+[node name="BottomWall" type="CollisionShape2D" parent="bounds2"]
+position = Vector2(600, 860)
+shape = SubResource("RectangleShape2D_2")
+
+[node name="CountdownTimer" type="Timer" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(577, 323)
+script = ExtResource("6_1ainy")
+
+[node name="SequencerManager" type="Node" parent="."]
+script = ExtResource("4_0b4ue")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="CombatSequencerUI" type="ColorRect" parent="." node_paths=PackedStringArray("sequencer_manager")]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("5_1ainy")
+sequencer_manager = NodePath("../SequencerManager")
+
+[node name="CombatStorageUI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("6_n6hdu")
+
+[node name="PermRect" type="ColorRect" parent="CombatStorageUI"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TempRect" type="ColorRect" parent="CombatStorageUI"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TempLabel" type="Label" parent="CombatStorageUI"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
