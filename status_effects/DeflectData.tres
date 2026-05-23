@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://xdbc1jb24j33"]
+
+[ext_resource type="Script" uid="uid://b3u2qw1fraiy6" path="res://StatusEffectData.gd" id="1_bgonx"]
+
+[resource]
+script = ExtResource("1_bgonx")
+effect_id = "deflect"
+display_name = "Deflect"
+values_per_level = [{
+"base_chance": 0.15,
+"level_bonus_chance": 0.075
+}]
+active_effect_script_path = "res://ActiveDeflectEffect.gd"
+metadata/_custom_type_script = "uid://b3u2qw1fraiy6"

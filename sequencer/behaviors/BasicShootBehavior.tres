@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Behavior_ShootProjectile" load_steps=2 format=3 uid="uid://bekvydvjwly7x"]
+
+[ext_resource type="Script" uid="uid://lswibk2fspga" path="res://sequencer/behaviors/Behavior_ShootProjectile.gd" id="1_ocf1l"]
+
+[resource]
+script = ExtResource("1_ocf1l")
+behavior_id = "base_behavior"
+metadata/_custom_type_script = "uid://lswibk2fspga"
