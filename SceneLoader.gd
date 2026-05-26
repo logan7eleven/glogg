@@ -8,7 +8,6 @@ const EFFECT_DATA_PATH = "res://status_effects/"
 
 func _ready() -> void:
 	_load_all_effects()
-	GlobalState.connect("upgrades_ready", Callable(self, "_on_upgrades_ready"))
 
 func _load_all_effects():
 	ALL_EFFECTS.clear()
@@ -33,9 +32,6 @@ func resume_game():
 	get_tree().paused = false
 	is_game_paused = false
 
-func _on_upgrades_ready() -> void:
-	call_deferred("_transition_to_planning_phase")
-
 func _transition_to_planning_phase():
 	var level_node = get_tree().current_scene
 	if is_instance_valid(level_node) and level_node.get("game_is_over") == true:
@@ -43,3 +39,6 @@ func _transition_to_planning_phase():
 		
 	# Skip the old popup and go straight to the grid
 	get_tree().change_scene_to_file("res://planning_phase/PlanningPhase.tscn")
+
+func post_boss_victory(boss_num: int):
+	pass # Implement your post-boss transition logic here

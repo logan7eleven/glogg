@@ -8,32 +8,26 @@ extends Node2D
 @onready var game_win_label = $GameWinLabel 
 @onready var countdown_timer = $CountdownTimer
 
-# --- Wave Management ---
-var current_wave: int = 0
-var base_enemy_count = 4
-var enemy_increment_per_wave = 4
+# --- Local State ---
 var next_enemy_id: int = 1
 var next_crawler_id: int = 1
-
-# --- Game State ---
 var game_is_over: bool = false 
 var original_process_mode: ProcessMode
-var is_boss_fight: bool = false
-var current_boss_num: int = 0
 var countdown_value: int = 3
 var player_spawn_position: Vector2 = Vector2(600, 400)
+var waiting_for_drops: bool = false
+var blocks_dropped_this_wave: int = 0
+var enemies_remaining_this_wave: int = 0
 
 # --- Scene Preloads ---
-const CRAWLER_SCENE = preload("res://crawler.tscn")
-const PLAYER_SCENE = preload("res://glogg.tscn")
-const DROPPED_BLOCK_SCENE = preload("res://loot/DroppedBlock.tscn")
+const PLAYER_SCENE = preload("res://player/glogg.tscn")
+const DROPPED_BLOCK_SCENE = preload("res://blocks/DroppedBlock.tscn")
 
 signal countdown_started(initial_countdown_value: int)
 signal countdown_tick(current_countdown_value: int)
 signal countdown_go
 signal wave_combat_started
 signal game_over_or_win_initiated
-signal boss_fight_starting
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
@@ -47,6 +41,11 @@ func _ready():
 	countdown_timer.one_shot = false
 	if not countdown_timer.is_connected("timeout", Callable(self, "_on_countdown_tick")):
 		countdown_timer.connect("timeout", Callable(self, "_on_countdown_tick"))
+	
+	GameManager.upgrades_ready.connect(_on_wave_cleared)
+	
+	# Listen for boss triggers from the GameManager
+	GameManager.connect("boss_fight_starting", Callable(self, "_on_boss_fight_starting"))
 		
 	spawn_player()
 	start_next_wave()
@@ -86,7 +85,7 @@ func _show_countdown_value():
 		game_over_label.hide()
 
 func _start_wave_actual():
-	print("Starting Wave %d" % current_wave)
+	print("Starting Wave %d" % GameManager.current_wave)
 	emit_signal("wave_combat_started")
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if is_instance_valid(player):
@@ -100,71 +99,61 @@ func spawn_player():
 	add_child(player)
 
 func start_next_wave():
-	if game_is_over or is_boss_fight: 
+	if game_is_over or GameManager.is_boss_fight: 
 		return
+		
 	cleanup_wave_entities()
 	next_enemy_id = 1
-	next_crawler_id = 1
-	var num_enemies = base_enemy_count + (current_wave * enemy_increment_per_wave)
-	GlobalState.set_next_wave_threshold(num_enemies)
-	GlobalState.reset_enemies_destroyed()
-	spawn_enemies(num_enemies)
-	current_wave += 1
+	blocks_dropped_this_wave = 0
+	enemies_remaining_this_wave = 0
+	
+	var enemy_roster = GameManager.prepare_next_wave()
+	spawn_enemies(enemy_roster)
 	start_level_countdown()
 
-func get_current_wave() -> int: 
-	return current_wave
-
-func spawn_enemies(count: int):
+func spawn_enemies(enemy_roster: Array[PackedScene]):
 	var spawned_enemies = []
 	
-	for i in range(count):
-		var enemy_instance = CRAWLER_SCENE.instantiate()
+	for scene_to_spawn in enemy_roster:
+		var enemy_instance = scene_to_spawn.instantiate()
 		enemy_instance.enemy_id = next_enemy_id
 		next_enemy_id += 1
-		if enemy_instance.get("crawler_id") != null:
-			enemy_instance.crawler_id = next_crawler_id
-			next_crawler_id += 1
-			
-		enemy_instance.position = _get_random_spawn_position()
-		enemy_instance.set_meta("held_drop", null)
 		
-		# Bind the enemy_instance to the signal so the kill function knows where to spawn the drop
+		enemy_instance.position = _get_random_spawn_position()
+		
 		if not enemy_instance.is_connected("killed", Callable(self, "_on_enemy_killed")):
 			enemy_instance.connect("killed", Callable(self, "_on_enemy_killed").bind(enemy_instance))
 			
 		add_child(enemy_instance)
 		spawned_enemies.append(enemy_instance)
 
-	# --- LEVEL BUDGETER LOGIC ---
-	var drops_to_assign = 3 + current_wave
-	drops_to_assign = min(drops_to_assign, spawned_enemies.size())
-	
-	spawned_enemies.shuffle()
-	
-	for i in range(drops_to_assign):
-		var generated_block = BlockFactory.create_random_block(SceneLoader.ALL_EFFECTS)
-		spawned_enemies[i].set_meta("held_drop", generated_block)
+	# Simply record how many enemies we have to kill this wave
+	enemies_remaining_this_wave = spawned_enemies.size()
 
 func _on_enemy_killed(source_block: BlockData, credit: float, enemy_node: Node2D):
-	# 1. Instantiate the physical drop item
+	# 1. Update the remaining enemies
+	enemies_remaining_this_wave -= 1
+	var should_drop = false
+	
+	# 2. Roll a flat 30% chance for a drop
+	if randf() <= 0.3:
+		should_drop = true
+		
+	# 3. The Pity Timer: If this is the last enemy and you got ZERO drops, force one!
+	if enemies_remaining_this_wave <= 0 and blocks_dropped_this_wave == 0:
+		should_drop = true
+		
+	# If neither condition was met, abort
+	if not should_drop:
+		return 
+
+	# 4. We are dropping a block! Count it, generate it, and spawn it.
+	blocks_dropped_this_wave += 1
+	var generated_block = BlockFactory.create_random_block(SceneLoader.ALL_EFFECTS)
+	
 	var drop = DROPPED_BLOCK_SCENE.instantiate()
 	drop.global_position = enemy_node.global_position
-	
-	# 2. Generate a random block for the player to pick up
-	var new_block = BlockData.new()
-	new_block.display_name = "Looted Block"
-	new_block.color = Color(randf(), randf(), randf()) # Random color
-	new_block.width = 1
-	new_block.height = 1
-	new_block.remaining_integrity = 5.0
-	
-	# Assign the basic shoot behavior so it actually works when placed
-	new_block.behavior = GlobalState.BASIC_SHOOT_BEHAVIOR 
-	new_block.initialize()
-	
-	# 3. Store the block inside the drop and add it to the level
-	drop.setup(new_block)
+	drop.setup(generated_block)
 	call_deferred("add_child", drop)
 
 func _get_random_spawn_position() -> Vector2:
@@ -198,11 +187,21 @@ func cleanup_all_entities():
 	if is_instance_valid(player):
 		player.queue_free()
 
-func start_boss_fight(boss_num: int):
+func _on_wave_cleared():
+	# The last enemy died. Turn on the drop scanner!
+	waiting_for_drops = true
+
+func _process(_delta):
+	# If the wave is over, constantly check if there is any loot left on the floor
+	if waiting_for_drops:
+		if get_tree().get_nodes_in_group("drops").size() == 0:
+			# No drops left! Now we can safely load the next screen.
+			waiting_for_drops = false
+			SceneLoader._transition_to_planning_phase()
+
+func _on_boss_fight_starting(boss_num: int):
 	if game_is_over: 
 		return
-	is_boss_fight = true
-	current_boss_num = boss_num
 	cleanup_wave_entities() 
 	cleanup_active_bullets() 
 	game_over_label.text = "BOSS!"
@@ -210,13 +209,12 @@ func start_boss_fight(boss_num: int):
 	var player = get_tree().get_first_node_in_group("players") as Node2D
 	if is_instance_valid(player):
 		player.can_move = true
-	emit_signal("boss_fight_starting")
 
 func game_over(message: String = "GAME OVER"):
 	if game_is_over: 
 		return
 	game_is_over = true
-	is_boss_fight = false
+	GameManager.is_boss_fight = false
 	cleanup_all_entities()
 	var label_to_show = game_over_label
 	var text_to_show = "GAME OVER"
@@ -230,13 +228,12 @@ func game_over(message: String = "GAME OVER"):
 	emit_signal("game_over_or_win_initiated")
 
 func boss_hit():
-	if not is_boss_fight: return
-	is_boss_fight = false 
+	if not GameManager.is_boss_fight: return
 	game_over_label.hide()
-	SceneLoader.post_boss_victory(current_boss_num)
+	GameManager.end_boss_fight()
 
 func _unhandled_input(event):
-	if is_boss_fight and not game_is_over and event.is_action_pressed("ui_accept"):
+	if GameManager.is_boss_fight and not game_is_over and event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled() 
 		boss_hit()
 		return 

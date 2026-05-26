@@ -1,11 +1,11 @@
 [gd_scene load_steps=11 format=3 uid="uid://b2ej762qgdvwf"]
 
 [ext_resource type="Script" uid="uid://bqs2xqf035ihs" path="res://level.gd" id="1_1ainy"]
-[ext_resource type="Script" uid="uid://5t1rdcwkbept" path="res://bullet_pool.gd" id="2_n6hdu"]
+[ext_resource type="Script" uid="uid://5t1rdcwkbept" path="res://player/bullet_pool.gd" id="2_n6hdu"]
 [ext_resource type="Script" uid="uid://baha8vblxahb3" path="res://sequencer/SequencerManager.gd" id="4_0b4ue"]
 [ext_resource type="Texture2D" uid="uid://cbdluse08cdfy" path="res://graphics/background2.png" id="4_1ainy"]
 [ext_resource type="Script" uid="uid://bifodgq2jxg1f" path="res://sequencer/CombatSequencerUI.gd" id="5_1ainy"]
-[ext_resource type="Script" uid="uid://due2cbfsv8dv" path="res://PlayerCamera.gd" id="6_1ainy"]
+[ext_resource type="Script" uid="uid://due2cbfsv8dv" path="res://player/PlayerCamera.gd" id="6_1ainy"]
 [ext_resource type="Script" uid="uid://coo4skduokkpa" path="res://ui/CombatStorageUI.gd" id="6_n6hdu"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0b4ue"]
@@ -106,30 +106,31 @@ script = ExtResource("4_0b4ue")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
-[node name="CombatSequencerUI" type="ColorRect" parent="." node_paths=PackedStringArray("sequencer_manager")]
+[node name="CombatSequencerUI" type="ColorRect" parent="HUD" node_paths=PackedStringArray("sequencer_manager")]
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("5_1ainy")
-sequencer_manager = NodePath("../SequencerManager")
+sequencer_manager = NodePath("../../SequencerManager")
 
-[node name="CombatStorageUI" type="Control" parent="."]
+[node name="CombatStorageUI" type="Control" parent="HUD"]
 layout_mode = 3
 anchors_preset = 0
+offset_top = 60.0
 offset_right = 40.0
-offset_bottom = 40.0
+offset_bottom = 100.0
 script = ExtResource("6_n6hdu")
 
-[node name="PermRect" type="ColorRect" parent="CombatStorageUI"]
+[node name="PermRect" type="ColorRect" parent="HUD/CombatStorageUI"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="TempRect" type="ColorRect" parent="CombatStorageUI"]
+[node name="TempRect" type="ColorRect" parent="HUD/CombatStorageUI"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="TempLabel" type="Label" parent="CombatStorageUI"]
+[node name="TempLabel" type="Label" parent="HUD/CombatStorageUI"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
