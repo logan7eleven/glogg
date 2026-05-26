@@ -1,14 +1,78 @@
-[gd_scene format=3 uid="uid://bbbk28s7t2nnn"]
+[gd_scene load_steps=3 format=3 uid="uid://bes48wh6y7t0a"]
 
-[node name="PlanningPhase" type="Node2D"]
+[ext_resource type="Script" uid="uid://c7lbtthsvcqoi" path="res://planning_phase/PlanningPhase.gd" id="1_jkxt7"]
 
-[node name="StagingContainer" type="GridContainer" parent="."]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jkxt7"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.882353, 0.815686, 0.12549, 1)
+
+[node name="PlanningPhase" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_jkxt7")
+
+[node name="BarContainer" type="ColorRect" parent="."]
 unique_name_in_owner = true
-offset_right = 40.0
-offset_bottom = 40.0
-columns = 2
+layout_mode = 0
+offset_left = 246.0
+offset_top = 36.0
+offset_right = 758.0
+offset_bottom = 132.0
+color = Color(0.0871241, 0.467507, 0.419495, 1)
+
+[node name="TempContainer" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 245.0
+offset_top = 174.0
+offset_right = 757.0
+offset_bottom = 270.0
+color = Color(0.936555, 0.533814, 0.538736, 1)
+
+[node name="PermContainer" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 408.0
+offset_top = 301.0
+offset_right = 600.0
+offset_bottom = 397.0
+color = Color(0.0549437, 0.394512, 0.712055, 1)
 
 [node name="EffectLabel" type="Label" parent="."]
 unique_name_in_owner = true
+layout_mode = 0
+offset_left = 775.0
+offset_top = 384.0
+offset_right = 1135.0
+offset_bottom = 624.0
+
+[node name="Selector" type="Control" parent="."]
+unique_name_in_owner = true
+anchors_preset = 0
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 40.0
+
+[node name="Outline" type="Panel" parent="Selector"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_jkxt7")
+
+[node name="Controls" type="Label" parent="."]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 482.0
+offset_right = 281.0
+offset_bottom = 609.0
+text = "[X] Pick Up / Place Block
+[R1] Rotate Block
+[CIRCLE] Cancel / Return to Origin
+[SQUARE] Clear Sequencer
+[START] Start Next Wave"

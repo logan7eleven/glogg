@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://sgyi1vu62n4k"]
+
+[ext_resource type="Script" uid="uid://d311qhfkrjwov" path="res://blocks/DroppedBlock.gd" id="1_i2f6a"]
+
+[node name="DroppedBlock" type="Area2D" groups=["drops"]]
+script = ExtResource("1_i2f6a")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]

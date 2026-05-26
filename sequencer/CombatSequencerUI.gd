@@ -4,8 +4,8 @@ extends ColorRect
 @export var sequencer_manager: Node
 
 const GRID_COLS = 16
-const GRID_ROWS = 12
-const CELL_SIZE = Vector2(15, 3) # Smaller footprint for the combat HUD
+const GRID_ROWS = 3
+const CELL_SIZE = Vector2(16, 16) # Smaller footprint for the combat HUD
 
 @onready var playhead = ColorRect.new()
 
@@ -27,11 +27,20 @@ func _draw_blocks():
 		var block: BlockData = entry["block"]
 		var origin: Vector2i = entry["origin"]
 		
-		var block_rect = ColorRect.new()
-		block_rect.color = block.color
-		block_rect.position = Vector2(origin) * CELL_SIZE
-		block_rect.size = Vector2(block.width, block.height) * CELL_SIZE
-		add_child(block_rect)
+		# Draw each active cell individually
+		for y in range(block.height):
+			for x in range(block.width):
+				if block.is_cell_active(x, y):
+					var cell_rect = ColorRect.new()
+					cell_rect.color = block.color
+					
+					# Offset by both the block's origin AND the cell's local position
+					var cell_x = origin.x + x
+					var cell_y = origin.y + y
+					cell_rect.position = Vector2(cell_x, cell_y) * CELL_SIZE
+					cell_rect.size = CELL_SIZE
+					
+					add_child(cell_rect)
 
 func _process(_delta):
 	if not is_instance_valid(sequencer_manager): return

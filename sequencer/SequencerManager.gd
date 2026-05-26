@@ -2,7 +2,7 @@
 extends Node
 
 const GRID_COLS = 16
-const GRID_ROWS = 12
+const GRID_ROWS = 3
 
 # 112.5 BPM = 1.875 beats per second = 2.133 seconds per 16-step loop
 # 2.133 / 16 = 0.1333 seconds per step
@@ -70,27 +70,40 @@ func _process(delta):
 				step_timer -= SECONDS_PER_STEP
 
 func _execute_current_step():
-	var executed_blocks: Dictionary = {} # Prevent firing multi-row blocks multiple times
+	var unique_blocks_this_step: Dictionary = {}
+	var column_total_height: int = 0
 	
-	# Scan the current column from top to bottom
+	var primary_behavior: Resource = null 
+	var primary_block: BlockData = null 
+	
 	for y in range(GRID_ROWS):
 		var cell_data = spatial_grid[current_step][y]
-		if cell_data == null: continue
+		if cell_data == null: 
+			continue
 		
 		var block: BlockData = cell_data["block"]
 		var origin: Vector2i = cell_data["origin"]
 		
-		if executed_blocks.has(block): continue
-		
-		# For SINGLE shot types, only fire on the frame the sequencer hits its leading edge
-		if block.shot_type == BlockData.ShotType.SINGLE and current_step != origin.x:
+		if unique_blocks_this_step.has(block): 
 			continue
 			
-		# Execute the block's behavior
-		if block.behavior != null:
+		unique_blocks_this_step[block] = origin
+
+	for block in unique_blocks_this_step.keys():
+		var origin = unique_blocks_this_step[block]
+		column_total_height += block.height
+		
+		if primary_behavior == null and block.behavior != null:
+			primary_behavior = block.behavior
+			primary_block = block
+
+	if column_total_height > 0:
+		var cumulative_damage = (float(column_total_height) / 12.0) * 2.0
+		
+		if primary_behavior and primary_behavior.has_method("execute"):
+			# PULL EXACTLY WHAT THE BEHAVIOR ASKS FOR
 			var gun_pos = player.get_gun_position()
 			var aim_angle = player.get_aim_angle()
 			
-			block.behavior.execute(gun_pos, aim_angle, block.effects, block)
-			
-		executed_blocks[block] = true
+			# We will add cumulative_damage to this signature in the next step!
+			primary_behavior.execute(gun_pos, aim_angle, cumulative_damage, primary_block.effects, primary_block)
